@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authRoutes } from "./auth.routes";
 
 export const router = Router();
 
@@ -8,3 +9,5 @@ router.get("/health", (_request, response) => {
         message: "MatricPay API is running",
     });
 });
+
+router.use("/auth", authRoutes);
