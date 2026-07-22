@@ -1,18 +1,448 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-datasource db {
-  provider = "mysql"
+enum UserRole {
+  organizer
+  admin
 }
 
+enum UserStatus {
+  active
+  suspended
+}
+
+enum CampaignType {
+  restricted
+  open
+}
+
+enum AmountType {
+  fixed
+  minimum
+}
+
+enum CampaignStatus {
+  draft
+  active
+  closed
+}
+
+enum PaymentStatus {
+  pending
+  successful
+  failed
+  expired
+  flagged
+}
+
+enum PaymentFailureReason {
+  amount_mismatch
+  currency_mismatch
+  verification_failed
+  cancelled_by_user
+}
+
+enum PaymentProvider {
+  paystack
+}
+
+enum OrganizationStatus {
+  active
+  suspended
+}
+
+enum OrganizationMemberRole {
+  owner
+  admin
+  finance
+  member
+}
+
+enum StudentImportMethod {
+  manual
+  csv
+  xlsx
+}
+
+enum StudentImportStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum BillingInterval {
+  monthly
+  yearly
+}
+
+enum PlanStatus {
+  active
+  archived
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  cancelled
+  expired
+}
+
+enum NotificationChannel {
+  in_app
+  email
+}
+
+enum NotificationStatus {
+  pending
+  sent
+  failed
+  read
+}
+
+enum ApiKeyStatus {
+  active
+  revoked
+}
+
+model User {
+  id             String     @id @default(uuid())
+  supabaseAuthId String?    @unique @map("supabase_auth_id")
+  fullName       String     @map("full_name")
+  email          String     @unique
+  passwordHash   String?    @map("password_hash")
+  role           UserRole   @default(organizer)
+  status         UserStatus @default(active)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  campaigns               Campaign[]
+  auditLogs               AuditLog[]            @relation("AuditActor")
+  ownedOrganizations      Organization[]        @relation("OrganizationOwner")
+  organizationMemberships OrganizationMember[]
+  studentImports          StudentImport[]       @relation("StudentImportCreator")
+  notifications           Notification[]
+  apiKeys                 ApiKey[]              @relation("ApiKeyCreator")
+
+  @@map("users")
+}
+
+model Campaign {
+  id           String         @id @default(uuid())
+  organizerId  String         @map("organizer_id")
+  organizationId String?      @map("organization_id")
+  title        String
+  description  String?
+  amount       Decimal        @db.Decimal(12, 2)
+  amountType   AmountType     @default(fixed) @map("amount_type")
+  currency     String         @default("NGN")
+  slug         String         @unique
+  paymentLink  String         @map("payment_link")
+  campaignType CampaignType   @default(restricted) @map("campaign_type")
+  status       CampaignStatus @default(draft)
+  expiresAt    DateTime?      @map("expires_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  organizer      User             @relation(fields: [organizerId], references: [id], onDelete: Restrict)
+  organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  students       Student[]
+  payments       Payment[]
+  studentImports StudentImport[]
+  settings       CampaignSetting?
+
+  @@index([organizerId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([campaignType])
+  @@map("campaigns")
+}
+
+model Student {
+  id           String   @id @default(uuid())
+  campaignId   String   @map("campaign_id")
+  matricNumber String   @map("matric_number")
+  fullName     String   @map("full_name")
+  email        String?
+  phone        String?
+  department   String?
+  level        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  campaign Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@unique([campaignId, matricNumber])
+  @@index([campaignId])
+  @@map("students")
+}
+
+model Payment {
+  id                    String                @id @default(uuid())
+  campaignId            String                @map("campaign_id")
+  studentId             String                @map("student_id")
+  amount                Decimal               @db.Decimal(12, 2)
+  currency              String                @default("NGN")
+  provider              PaymentProvider       @default(paystack)
+  reference             String                @unique
+  providerTransactionId String?               @map("provider_transaction_id")
+  status                PaymentStatus         @default(pending)
+  failureReason         PaymentFailureReason? @map("failure_reason")
+  verifiedAt            DateTime?             @map("verified_at")
+  expiresAt             DateTime              @map("expires_at")
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  student  Student  @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  receipt  PaymentReceipt?
+
+  @@index([campaignId])
+  @@index([studentId])
+  @@index([campaignId, studentId, status])
+  @@index([status])
+  @@map("payments")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?  @map("actor_id")
+  actorRole  UserRole @map("actor_role")
+  event      String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([event])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model WebhookLog {
+  id          String          @id @default(uuid())
+  provider    PaymentProvider @default(paystack)
+  eventType   String          @map("event_type")
+  reference   String?
+  payload     Json
+  processed   Boolean         @default(false)
+  attempts    Int             @default(0)
+  lastError   String?         @map("last_error")
+  receivedAt  DateTime        @default(now()) @map("received_at")
+  processedAt DateTime?       @map("processed_at")
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  @@index([provider])
+  @@index([reference])
+  @@index([processed])
+  @@map("webhook_logs")
+}
+
+
+// Phase 2-ready tables
+
+model Organization {
+  id          String             @id @default(uuid())
+  ownerId     String             @map("owner_id")
+  name        String
+  school      String?
+  department  String?
+  faculty     String?
+  status      OrganizationStatus @default(active)
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  owner           User                 @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  members         OrganizationMember[]
+  campaigns       Campaign[]
+  paymentSettings PaymentSetting?
+  subscriptions   Subscription[]
+  apiKeys         ApiKey[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String                 @id @default(uuid())
+  organizationId String                 @map("organization_id")
+  userId         String                 @map("user_id")
+  role           OrganizationMemberRole @default(member)
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@map("organization_members")
+}
+
+model StudentImport {
+  id             String              @id @default(uuid())
+  campaignId     String              @map("campaign_id")
+  importedById   String              @map("imported_by_id")
+  method         StudentImportMethod
+  status         StudentImportStatus @default(pending)
+  originalName   String?             @map("original_name")
+  totalRows      Int                 @default(0) @map("total_rows")
+  processedRows  Int                 @default(0) @map("processed_rows")
+  successfulRows Int                 @default(0) @map("successful_rows")
+  failedRows     Int                 @default(0) @map("failed_rows")
+  skippedRows    Int                 @default(0) @map("skipped_rows")
+  errors         Json?
+  createdAt      DateTime            @default(now()) @map("created_at")
+  completedAt    DateTime?           @map("completed_at")
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  importedBy User     @relation("StudentImportCreator", fields: [importedById], references: [id], onDelete: Restrict)
+
+  @@index([campaignId])
+  @@index([importedById])
+  @@index([status])
+  @@map("student_imports")
+}
+
+model CampaignSetting {
+  id                    String   @id @default(uuid())
+  campaignId            String   @unique @map("campaign_id")
+  confirmationMessage   String?  @map("confirmation_message")
+  successRedirectUrl    String?  @map("success_redirect_url")
+  allowDuplicateMatric  Boolean  @default(false) @map("allow_duplicate_matric")
+  requireStudentEmail   Boolean  @default(false) @map("require_student_email")
+  requireStudentPhone   Boolean  @default(false) @map("require_student_phone")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_settings")
+}
+
+model PaymentSetting {
+  id                  String   @id @default(uuid())
+  organizationId      String   @unique @map("organization_id")
+  defaultCurrency     String   @default("NGN") @map("default_currency")
+  defaultDescription  String?  @map("default_description")
+  paystackSubaccount  String?  @map("paystack_subaccount")
+  settlementAccount   String?  @map("settlement_account")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("payment_settings")
+}
+
+model Plan {
+  id          String          @id @default(uuid())
+  name        String
+  slug        String          @unique
+  description String?
+  price       Decimal         @db.Decimal(12, 2)
+  currency    String          @default("NGN")
+  interval    BillingInterval
+  status      PlanStatus      @default(active)
+  features    Json?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  subscriptions Subscription[]
+
+  @@index([status])
+  @@map("plans")
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  organizationId       String             @map("organization_id")
+  planId               String             @map("plan_id")
+  status               SubscriptionStatus @default(trialing)
+  provider             PaymentProvider    @default(paystack)
+  providerCustomerId   String?            @map("provider_customer_id")
+  providerSubscriptionId String?          @unique @map("provider_subscription_id")
+  currentPeriodStart   DateTime?          @map("current_period_start")
+  currentPeriodEnd     DateTime?          @map("current_period_end")
+  cancelledAt          DateTime?          @map("cancelled_at")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan         Plan         @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([planId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Notification {
+  id        String              @id @default(uuid())
+  userId    String              @map("user_id")
+  channel   NotificationChannel @default(in_app)
+  status    NotificationStatus  @default(pending)
+  title     String
+  body      String
+  metadata  Json?
+  sentAt    DateTime?           @map("sent_at")
+  readAt    DateTime?           @map("read_at")
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("notifications")
+}
+
+model PaymentReceipt {
+  id          String   @id @default(uuid())
+  paymentId   String   @unique @map("payment_id")
+  receiptNo   String   @unique @map("receipt_no")
+  issuedTo    String   @map("issued_to")
+  email       String?
+  amount      Decimal  @db.Decimal(12, 2)
+  currency    String   @default("NGN")
+  metadata    Json?
+  issuedAt    DateTime @default(now()) @map("issued_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("payment_receipts")
+}
+
+model ApiKey {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  createdById    String       @map("created_by_id")
+  name           String
+  keyHash        String       @unique @map("key_hash")
+  prefix         String
+  status         ApiKeyStatus @default(active)
+  lastUsedAt     DateTime?    @map("last_used_at")
+  expiresAt      DateTime?    @map("expires_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  revokedAt      DateTime?    @map("revoked_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("ApiKeyCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([createdById])
+  @@index([status])
+  @@map("api_keys")
+}
