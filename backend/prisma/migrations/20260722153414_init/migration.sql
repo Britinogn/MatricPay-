@@ -445,6 +445,15 @@ CREATE INDEX "api_keys_created_by_id_idx" ON "api_keys"("created_by_id");
 -- CreateIndex
 CREATE INDEX "api_keys_status_idx" ON "api_keys"("status");
 
+-- Create Unique Index
+CREATE UNIQUE INDEX "payments_one_pending_per_student_campaign"
+    ON "payments" ("campaign_id", "student_id")
+WHERE "status" = 'pending';
+
+CREATE UNIQUE INDEX "payments_one_successful_per_student_campaign"
+    ON "payments" ("campaign_id", "student_id")
+WHERE "status" = 'successful';
+
 -- AddForeignKey
 ALTER TABLE "campaigns" ADD CONSTRAINT "campaigns_organizer_id_fkey" FOREIGN KEY ("organizer_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 

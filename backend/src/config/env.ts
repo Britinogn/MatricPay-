@@ -23,6 +23,14 @@ const envSchema = z.object({
     MAX_UPLOAD_SIZE: z.coerce.number().int().positive().default(2_097_152),
     MAX_UPLOAD_ROWS: z.coerce.number().int().positive().default(5_000),
 
+    EMAIL_HOST: z.string().min(1),
+    EMAIL_PORT: z.coerce.number().int().positive().default(587),
+    EMAIL_SECURE: z.coerce.boolean().default(false),
+    EMAIL_USER: z.string().min(1),
+    EMAIL_PASS: z.string().min(1),
+    EMAIL_FROM: z.string().min(1),
+
+
     BCRYPT_ROUNDS: z.coerce.number().int().positive().default(12),
 })
 

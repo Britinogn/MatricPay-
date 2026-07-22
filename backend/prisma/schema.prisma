@@ -117,6 +117,9 @@ model User {
   fullName       String     @map("full_name")
   email          String     @unique
   passwordHash   String?    @map("password_hash")
+  passwordResetTokenHash String?   @map("password_reset_token_hash")
+  passwordResetExpiresAt DateTime? @map("password_reset_expires_at")
+  passwordResetRequestedAt DateTime? @map("password_reset_requested_at")
   role           UserRole   @default(organizer)
   status         UserStatus @default(active)
   createdAt      DateTime   @default(now()) @map("created_at")
