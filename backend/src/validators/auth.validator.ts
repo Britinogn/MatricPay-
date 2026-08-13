@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const RegisterSchema = z.object({
-  fullName: z.string().min(2, { message: "Full name must be at least 4 characters" }),
+  fullName: z.string().min(4, { message: "Full name must be at least 4 characters" }),
   email: z.email({ message: "Invalid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 });
@@ -23,7 +23,7 @@ export const ResetPasswordSchema = z.object({
 export const GoogleSyncSchema = z.object({
   supabaseAuthId: z.string().min(1, { message: "Supabase Auth ID is required" }),
   email: z.email({ message: "Invalid email address" }),
-  fullName: z.string().min(2, { message: "Full name must be at least 2 characters" }),
+  fullName: z.string().min(4, { message: "Full name must be at least 4 characters" }),
 });
 
 export type RegisterInput = z.infer<typeof RegisterSchema>;
