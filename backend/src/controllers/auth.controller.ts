@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import {
   ForgotPasswordSchema,
@@ -7,94 +7,48 @@ import {
   RegisterSchema,
   ResetPasswordSchema,
 } from "../validators/auth.validator";
-import { z } from "zod";
 
 export class AuthController {
-  async register(req: Request, res: Response): Promise<void> {
-    try {
-      const data = RegisterSchema.parse(req.body);
-      const result = await authService.register(data);
-      res.status(201).json(result);
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: error.issues });
-        return;
-      }
-      res.status(400).json({ error: error.message || "Registration failed" });
-    }
+  async register(request: Request, response: Response): Promise<void> {
+    const data = RegisterSchema.parse(request.body);
+    const result = await authService.register(data);
+    response.status(201).json(result);
   }
 
-  async login(req: Request, res: Response): Promise<void> {
-    try {
-      const data = LoginSchema.parse(req.body);
-      const result = await authService.login(data);
-      res.status(200).json(result);
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: error.issues });
-        return;
-      }
-      res.status(401).json({ error: error.message || "Login failed" });
-    }
+  async login(request: Request, response: Response): Promise<void> {
+    const data = LoginSchema.parse(request.body);
+    const result = await authService.login(data);
+    response.status(200).json(result);
   }
 
-  async googleSync(req: Request, res: Response): Promise<void> {
-    try {
-      const data = GoogleSyncSchema.parse(req.body);
-      const result = await authService.googleSync(data);
-      res.status(200).json(result);
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: error.issues });
-        return;
-      }
-      res.status(400).json({ error: error.message || "Google sync failed" });
-    }
+  async googleSync(request: Request, response: Response): Promise<void> {
+    const data = GoogleSyncSchema.parse(request.body);
+    const result = await authService.googleSync(data);
+    response.status(200).json(result);
   }
 
-  async forgotPassword(req: Request, res: Response): Promise<void> {
-    try {
-      const data = ForgotPasswordSchema.parse(req.body);
-      const result = await authService.forgotPassword(data);
-      res.status(200).json(result);
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: error.issues });
-        return;
-      }
-      res.status(400).json({ error: error.message || "Failed to process request" });
-    }
+  async forgotPassword(request: Request, response: Response): Promise<void> {
+    const data = ForgotPasswordSchema.parse(request.body);
+    const result = await authService.forgotPassword(data);
+    response.status(200).json(result);
   }
 
-  async resetPassword(req: Request, res: Response): Promise<void> {
-    try {
-      const data = ResetPasswordSchema.parse(req.body);
-      const result = await authService.resetPassword(data);
-      res.status(200).json(result);
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Validation failed", details: error.issues });
-        return;
-      }
-      res.status(400).json({ error: error.message || "Failed to reset password" });
-    }
+  async resetPassword(request: Request, response: Response): Promise<void> {
+    const data = ResetPasswordSchema.parse(request.body);
+    const result = await authService.resetPassword(data);
+    response.status(200).json(result);
   }
 
-  async me(req: Request, res: Response): Promise<void> {
-    // req.user will be populated by the auth middleware
-    const user = (req as any).user;
-    if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-
-    res.status(200).json({
-      user: {
-        id: user.id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-      },
+  async me(request: Request, response: Response): Promise<void> {
+    response.status(200).json({
+      user: request.user
+        ? {
+            id: request.user.id,
+            fullName: request.user.fullName,
+            email: request.user.email,
+            role: request.user.role,
+          }
+        : null,
     });
   }
 }

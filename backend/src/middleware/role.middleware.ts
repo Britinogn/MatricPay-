@@ -1,22 +1,25 @@
-import { NextFunction, Request, Response } from "express";
-import { UserRole } from "@prisma/client";
+import type { NextFunction, Request, Response } from "express";
+import type { UserRole } from "@prisma/client";
+import { HttpError } from "../utils/http-error";
 
-export const requireRole = (allowedRoles: UserRole[]) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    const user = (req as any).user;
-
-    if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+export function requireRole(allowedRoles: UserRole[]) {
+  return function roleMiddleware(
+    request: Request,
+    _response: Response,
+    next: NextFunction
+  ): void {
+    if (!request.user) {
+      next(new HttpError(401, "Unauthorized"));
       return;
     }
 
-    if (!allowedRoles.includes(user.role as UserRole)) {
-      res.status(403).json({ error: "Forbidden: Insufficient permissions" });
+    if (!allowedRoles.includes(request.user.role)) {
+      next(new HttpError(403, "Forbidden: Insufficient permissions"));
       return;
     }
 
     next();
   };
-};
+}
 
-export const requireAnyRole = (allowedRoles: UserRole[]) => requireRole(allowedRoles);
+export const requireAnyRole = requireRole;

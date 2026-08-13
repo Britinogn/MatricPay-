@@ -13,15 +13,36 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const getTemplateContent = async (templateName: string): Promise<string> => {
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>'"]/g, (character) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    };
+
+    return entities[character];
+  });
+}
+
+async function getTemplateContent(templateName: string): Promise<string> {
   const templatePath = path.join(__dirname, "..", "templates", "email", templateName);
   return fs.readFile(templatePath, "utf-8");
-};
+}
 
-export const sendWelcomeEmail = async (email: string, name: string): Promise<void> => {
+function renderTemplate(template: string, variables: Record<string, string>): string {
+  return Object.entries(variables).reduce((content, [key, value]) => {
+    return content.replaceAll(`{{${key}}}`, escapeHtml(value));
+  }, template);
+}
+
+export async function sendWelcomeEmail(email: string, name: string): Promise<void> {
   try {
-    let htmlContent = await getTemplateContent("welcome.html");
-    htmlContent = htmlContent.replace("{{name}}", name);
+    const htmlContent = renderTemplate(await getTemplateContent("welcome.html"), {
+      name,
+    });
 
     await transporter.sendMail({
       from: env.EMAIL_FROM,
@@ -32,13 +53,17 @@ export const sendWelcomeEmail = async (email: string, name: string): Promise<voi
   } catch (error) {
     console.error(`Failed to send welcome email to ${email}`, error);
   }
-};
+}
 
-export const sendPasswordResetEmail = async (email: string, resetToken: string): Promise<void> => {
+export async function sendPasswordResetEmail(
+  email: string,
+  resetToken: string
+): Promise<void> {
   try {
-    const resetUrl = `${env.CLIENT_URL}/reset-password?token=${resetToken}`;
-    let htmlContent = await getTemplateContent("reset-password.html");
-    htmlContent = htmlContent.replace("{{resetUrl}}", resetUrl);
+    const resetUrl = `${env.CLIENT_URL}/reset-password?token=${encodeURIComponent(resetToken)}`;
+    const htmlContent = renderTemplate(await getTemplateContent("reset-password.html"), {
+      resetUrl,
+    });
 
     await transporter.sendMail({
       from: env.EMAIL_FROM,
@@ -49,4 +74,4 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string):
   } catch (error) {
     console.error(`Failed to send password reset email to ${email}`, error);
   }
-};
+}

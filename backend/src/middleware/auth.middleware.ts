@@ -1,40 +1,40 @@
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { UserStatus } from "@prisma/client";
 import { userRepository } from "../repositories/user.repository";
 import { verifyAccessToken } from "../utils/jwt";
+import { HttpError } from "../utils/http-error";
 
-export const authMiddleware = async (
-  req: Request,
-  res: Response,
+export async function authMiddleware(
+  request: Request,
+  _response: Response,
   next: NextFunction
-): Promise<void> => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Unauthorized: Missing or invalid token" });
-    return;
-  }
-
-  const token = authHeader.split(" ")[1];
-
+): Promise<void> {
   try {
+    const authHeader = request.headers.authorization;
+
+    if (!authHeader?.startsWith("Bearer ")) {
+      throw new HttpError(401, "Unauthorized: Missing or invalid token");
+    }
+
+    const token = authHeader.slice("Bearer ".length).trim();
+    if (!token) {
+      throw new HttpError(401, "Unauthorized: Missing or invalid token");
+    }
+
     const payload = verifyAccessToken(token);
     const user = await userRepository.findById(payload.userId);
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized: User not found" });
-      return;
+      throw new HttpError(401, "Unauthorized: User not found");
     }
 
     if (user.status === UserStatus.suspended) {
-      res.status(403).json({ error: "Forbidden: Account is suspended" });
-      return;
+      throw new HttpError(403, "Forbidden: Account is suspended");
     }
 
-    // Attach user to the request object
-    (req as any).user = user;
+    request.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ error: "Unauthorized: Invalid or expired token" });
+    next(error instanceof HttpError ? error : new HttpError(401, "Unauthorized: Invalid or expired token"));
   }
-};
+}
