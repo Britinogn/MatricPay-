@@ -22,6 +22,21 @@ export class DashboardController {
       data,
     });
   }
+
+  async getOrganizerOverview(request: Request, response: Response): Promise<void> {
+    const user = request.user;
+
+    if (!user) {
+      throw new HttpError(401, "Unauthorized");
+    }
+
+    const data = await dashboardService.getOrganizerOverview(user);
+
+    response.status(200).json({
+      success: true,
+      data,
+    });
+  }
 }
 
 export const dashboardController = new DashboardController();

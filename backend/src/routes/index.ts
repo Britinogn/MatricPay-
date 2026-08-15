@@ -17,6 +17,7 @@ router.get("/health", (_request, response) => {
 
 router.use("/auth", authRoutes);
 router.use("/admin", adminRoutes);
+router.use("/organizer", dashboardRoutes);
 router.use("/campaigns", dashboardRoutes);
 router.use("/campaigns", studentRoutes);
 router.use("/campaigns", campaignRoutes);

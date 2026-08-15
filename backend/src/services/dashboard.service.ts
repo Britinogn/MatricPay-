@@ -152,6 +152,61 @@ export class DashboardService {
       })),
     };
   }
+
+  async getOrganizerOverview(user: AuthUser) {
+    // Only organizers (or admins acting as organizers) can query personal overview
+    const campaigns = await prisma.campaign.findMany({
+      where: { organizerId: user.id },
+      include: {
+        _count: {
+          select: {
+            students: true,
+            payments: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const totalCampaigns = campaigns.length;
+    const activeCampaigns = campaigns.filter((c) => c.status === CampaignStatus.active).length;
+
+    // Aggregate funds collected across all owned campaigns
+    const successfulPaymentsSum = await prisma.payment.aggregate({
+      where: {
+        campaign: { organizerId: user.id },
+        status: PaymentStatus.successful,
+      },
+      _sum: {
+        amount: true,
+      },
+    });
+
+    const totalCollected = Number(successfulPaymentsSum._sum.amount || 0);
+
+    // Count total students across all owned campaigns
+    const totalStudentsSum = campaigns.reduce((acc, c) => acc + c._count.students, 0);
+
+    return {
+      overview: {
+        totalCampaigns,
+        activeCampaigns,
+        totalStudents: totalStudentsSum,
+        totalCollected,
+      },
+      campaigns: campaigns.map((c) => ({
+        id: c.id,
+        title: c.title,
+        amount: c.amount,
+        campaignType: c.campaignType,
+        status: c.status,
+        slug: c.slug,
+        studentCount: c._count.students,
+        paymentCount: c._count.payments,
+        createdAt: c.createdAt,
+      })),
+    };
+  }
 }
 
 export const dashboardService = new DashboardService();

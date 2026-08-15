@@ -17,6 +17,7 @@ exports.router.get("/health", (_request, response) => {
 });
 exports.router.use("/auth", auth_routes_1.authRoutes);
 exports.router.use("/admin", admin_routes_1.adminRoutes);
+exports.router.use("/organizer", dashboard_routes_1.dashboardRoutes);
 exports.router.use("/campaigns", dashboard_routes_1.dashboardRoutes);
 exports.router.use("/campaigns", student_routes_1.studentRoutes);
 exports.router.use("/campaigns", campaign_routes_1.campaignRoutes);

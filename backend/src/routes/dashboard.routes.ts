@@ -8,6 +8,11 @@ export const dashboardRoutes = Router();
 dashboardRoutes.use(authMiddleware);
 
 dashboardRoutes.get(
+  "/overview",
+  asyncHandler(dashboardController.getOrganizerOverview.bind(dashboardController))
+);
+
+dashboardRoutes.get(
   "/:id/dashboard",
   asyncHandler(dashboardController.getCampaignDashboard.bind(dashboardController))
 );
