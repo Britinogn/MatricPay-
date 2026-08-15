@@ -1,0 +1,45 @@
+:root {
+    --background: #12160F;
+    --surface: #191F19;
+    --border: #2A322C;
+    --primary: #2F6F4E;
+    --primary-hover: #3B8562;
+    --accent: #D9AE49;
+    --accent-hover: #E6BE63;
+    --text-primary: #F7F3E8;
+    --text-muted: #9AA79D;
+
+    --font-body: 'Inter', sans-serif;
+    --font-display: 'Fraunces', serif;
+    --font-mono: 'Space Mono', monospace;
+}
+
+html.light {
+    --background: #F7F3E8;
+    --surface: #FFFFFF;
+    --border: #E4DCC8;
+    --primary: #1F4D3A;
+    --primary-hover: #17392A;
+    --accent: #C9972B;
+    --accent-hover: #D6A73C;
+    --text-primary: #1B2B22;
+    --text-muted: #4A5A50;
+}
+
+html {
+    font-family: var(--font-body);
+    background-color: var(--background);
+    color: var(--text-primary);
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }

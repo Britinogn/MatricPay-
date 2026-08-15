@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MatricPay — Class dues, verified.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --parchment: #F7F3E8;
+    --parchment-deep: #EFE8D6;
+    --ink: #1B2B22;
+    --ink-soft: #4A5A50;
+    --green: #1F4D3A;
+    --green-soft: #E5EEE8;
+    --gold: #C9972B;
+    --gold-soft: #F6E9CB;
+    --card: #FFFFFF;
+    --border: rgba(27,43,34,0.14);
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  header.site {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  header.site .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .wordmark {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .wordmark span { color: var(--green); }
+
+  nav.actions { display: flex; align-items: center; gap: 18px; }
+  nav.actions a.login {
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .btn {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 11px 20px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .btn-primary { background: var(--green); color: var(--parchment); }
+  .btn-primary:hover { background: #17392A; }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--ink); }
+
+  /* HERO */
+  .hero { padding: 72px 0 56px; }
+  .hero .wrap {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gold-soft);
+    border: 1px solid var(--gold);
+    color: #8A6512;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 44px;
+    line-height: 1.14;
+    letter-spacing: -0.015em;
+    margin: 0 0 20px;
+  }
+  h1 em { font-style: italic; color: var(--green); }
+  .hero p.lede {
+    font-size: 16.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 440px;
+    margin: 0 0 30px;
+  }
+  .hero-actions { display: flex; gap: 12px; }
+
+  /* TICKET STUB — signature element */
+  .stub-wrap { position: relative; }
+  .stub {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 24px 48px -20px rgba(27,43,34,0.28);
+    overflow: hidden;
+  }
+  .stub-top {
+    background: var(--green);
+    color: var(--parchment);
+    padding: 20px 24px;
+  }
+  .stub-top .inst {
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin: 0 0 4px;
+  }
+  .stub-top .title { font-size: 17px; font-weight: 600; margin: 0 0 2px; }
+  .stub-top .amount {
+    font-family: 'Space Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+
+  .perforation {
+    position: relative;
+    height: 0;
+    border-top: 2px dashed var(--border);
+    margin: 0 24px;
+  }
+  .perforation::before, .perforation::after {
+    content: "";
+    position: absolute;
+    top: -11px;
+    width: 22px;
+    height: 22px;
+    background: var(--parchment);
+    border-radius: 50%;
+  }
+  .perforation::before { left: -35px; }
+  .perforation::after { right: -35px; }
+
+  .stub-bottom { padding: 22px 24px 24px; }
+  .matric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .matric-label { font-size: 11.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+  .matric-value { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; }
+
+  .seal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--green-soft);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 18px;
+  }
+  .seal-badge {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--green);
+    color: var(--parchment);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .seal p { margin: 0; font-size: 13px; color: var(--green); font-weight: 600; }
+
+  .stub-bottom .btn-primary { width: 100%; text-align: center; padding: 13px; }
+
+  /* PRODUCT PREVIEW — inline SVG UI mockup */
+  .preview { padding: 8px 0 64px; }
+  .preview h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 26px;
+    text-align: center;
+    margin: 0 0 8px;
+  }
+  .preview .sub {
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0 0 32px;
+  }
+  .browser-frame {
+    max-width: 880px;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 24px 48px -20px rgba(27,43,34,0.28);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  /* TRUST STRIP */
+  .trust { padding: 20px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .trust .wrap { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .trust .label { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+  .crest {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+  }
+
+  /* HOW IT WORKS */
+  .steps { padding: 64px 0; }
+  .steps h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 28px;
+    text-align: center;
+    margin: 0 0 40px;
+  }
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .step {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 22px;
+    position: relative;
+  }
+  .step .num {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .step h3 { font-size: 15.5px; font-weight: 600; margin: 0 0 8px; }
+  .step p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+
+  /* FOOTER CTA */
+  .cta {
+    background: var(--green);
+    color: var(--parchment);
+    border-radius: 20px;
+    margin: 0 0 72px;
+    padding: 44px;
+    text-align: center;
+  }
+  .cta h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 26px; margin: 0 0 10px; }
+  .cta p { font-size: 14.5px; opacity: 0.85; margin: 0 0 24px; }
+  .cta .btn-primary { background: var(--gold); color: var(--ink); }
+  .cta .btn-primary:hover { background: #D6A73C; }
+
+  @media (max-width: 760px) {
+    .hero .wrap { grid-template-columns: 1fr; }
+    h1 { font-size: 32px; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 0 20px; }
+    .perforation::before { left: -30px; }
+    .perforation::after { right: -30px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <div class="wordmark">Matric<span>Pay</span></div>
+    <nav class="actions">
+      <a class="login" href="#">Log in</a>
+      <a class="btn btn-primary" href="#">Create a campaign</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="stamp">● Verified for uni &amp; poly class reps</span>
+      <h1>Class dues that get <em>verified</em>, not vanished.</h1>
+      <p class="lede">One link. Students pay by card, transfer, or USSD — you watch every payment land and match itself to the right matric number, automatically.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#">Create a campaign — it's free</a>
+        <a class="btn btn-ghost" href="#">See a demo link</a>
+      </div>
+    </div>
+
+    <div class="stub-wrap">
+      <div class="stub">
+        <div class="stub-top">
+          <p class="inst">Faculty of Engineering · UNILAG</p>
+          <p class="title">400L Excursion Levy</p>
+          <p class="amount">₦8,500.00</p>
+        </div>
+        <div class="perforation"></div>
+        <div class="stub-bottom">
+          <div class="matric-row">
+            <span class="matric-label">Matric No.</span>
+            <span class="matric-value">ENG/2022/1140</span>
+          </div>
+          <div class="seal">
+            <span class="seal-badge">✓</span>
+            <p>Student verified against class roster</p>
+          </div>
+          <a class="btn btn-primary" href="#">Pay with Paystack</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview">
+  <div class="wrap">
+    <h2>See it in action</h2>
+    <p class="sub">What a class rep sees while dues come in</p>
+
+    <div class="browser-frame">
+      <svg viewBox="0 0 880 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Organizer dashboard mockup showing campaign status, collection stats, a progress bar, and a recent payments list">
+
+        <rect x="0" y="0" width="880" height="520" fill="var(--card)" />
+
+        <!-- browser chrome -->
+        <rect x="0" y="0" width="880" height="44" fill="var(--parchment-deep)" />
+        <circle cx="24" cy="22" r="6" fill="var(--gold)" />
+        <circle cx="46" cy="22" r="6" fill="var(--border)" />
+        <circle cx="68" cy="22" r="6" fill="var(--border)" />
+        <rect x="100" y="12" width="360" height="20" rx="10" fill="var(--parchment)" />
+        <text x="118" y="26" font-family="'Space Mono', monospace" font-size="11" fill="var(--ink-soft)">matricpay.com/campaigns/2026-levy</text>
+
+        <!-- page heading -->
+        <text x="32" y="80" font-family="'Inter', sans-serif" font-weight="600" font-size="18" fill="var(--ink)">2026 Departmental Levy</text>
+        <rect x="32" y="92" width="66" height="20" rx="10" fill="var(--green-soft)" />
+        <text x="65" y="106" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="600" font-size="11" fill="var(--green)">Active</text>
+
+        <rect x="738" y="82" width="110" height="32" rx="8" fill="none" stroke="var(--border)" />
+        <text x="793" y="102" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="600" font-size="12" fill="var(--ink)">Share link</text>
+
+        <!-- stat cards -->
+        <g font-family="'Inter', sans-serif">
+          <rect x="32" y="134" width="188" height="76" rx="10" fill="var(--parchment)" stroke="var(--border)" />
+          <text x="50" y="160" font-size="11" fill="var(--ink-soft)">Students</text>
+          <text x="50" y="188" font-family="'Space Mono', monospace" font-weight="700" font-size="22" fill="var(--ink)">240</text>
+
+          <rect x="232" y="134" width="188" height="76" rx="10" fill="var(--parchment)" stroke="var(--border)" />
+          <text x="250" y="160" font-size="11" fill="var(--ink-soft)">Paid</text>
+          <text x="250" y="188" font-family="'Space Mono', monospace" font-weight="700" font-size="22" fill="var(--green)">187</text>
+
+          <rect x="432" y="134" width="188" height="76" rx="10" fill="var(--parchment)" stroke="var(--border)" />
+          <text x="450" y="160" font-size="11" fill="var(--ink-soft)">Unpaid</text>
+          <text x="450" y="188" font-family="'Space Mono', monospace" font-weight="700" font-size="22" fill="var(--ink)">53</text>
+
+          <rect x="632" y="134" width="216" height="76" rx="10" fill="var(--parchment)" stroke="var(--border)" />
+          <text x="650" y="160" font-size="11" fill="var(--ink-soft)">Flagged</text>
+          <text x="650" y="188" font-family="'Space Mono', monospace" font-weight="700" font-size="22" fill="#8A6512">2</text>
+        </g>
+
+        <!-- collection progress -->
+        <rect x="32" y="230" width="816" height="70" rx="10" fill="var(--parchment)" stroke="var(--border)" />
+        <text x="50" y="254" font-size="11" fill="var(--ink-soft)">Collected of ₦1,200,000</text>
+        <text x="50" y="278" font-family="'Space Mono', monospace" font-weight="700" font-size="18" fill="var(--ink)">₦935,000</text>
+        <rect x="300" y="264" width="516" height="8" rx="4" fill="var(--border)" />
+        <rect x="300" y="264" width="403" height="8" rx="4" fill="var(--green)" />
+        <text x="726" y="271" font-family="'Space Mono', monospace" font-size="11" fill="var(--ink-soft)">78%</text>
+
+        <!-- recent payments table -->
+        <text x="32" y="330" font-family="'Inter', sans-serif" font-weight="600" font-size="13" fill="var(--ink)">Recent payments</text>
+        <line x1="32" y1="340" x2="848" y2="340" stroke="var(--border)" />
+
+        <text x="32" y="368" font-family="'Inter', sans-serif" font-size="13" fill="var(--ink)">Chinedu Adeyemi</text>
+        <text x="230" y="368" font-family="'Space Mono', monospace" font-size="11" fill="var(--ink-soft)">CSC/2021/0018</text>
+        <rect x="760" y="354" width="88" height="22" rx="11" fill="var(--green-soft)" />
+        <text x="804" y="369" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="600" font-size="11" fill="var(--green)">Successful</text>
+        <line x1="32" y1="384" x2="848" y2="384" stroke="var(--border)" />
+
+        <text x="32" y="412" font-family="'Inter', sans-serif" font-size="13" fill="var(--ink)">Fatima Bello</text>
+        <text x="230" y="412" font-family="'Space Mono', monospace" font-size="11" fill="var(--ink-soft)">CSC/2021/0091</text>
+        <rect x="770" y="398" width="78" height="22" rx="11" fill="var(--gold-soft)" />
+        <text x="809" y="413" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="600" font-size="11" fill="#8A6512">Flagged</text>
+        <line x1="32" y1="428" x2="848" y2="428" stroke="var(--border)" />
+
+        <text x="32" y="456" font-family="'Inter', sans-serif" font-size="13" fill="var(--ink)">Emeka Nwosu</text>
+        <text x="230" y="456" font-family="'Space Mono', monospace" font-size="11" fill="var(--ink-soft)">CSC/2021/0055</text>
+        <rect x="760" y="442" width="88" height="22" rx="11" fill="var(--green-soft)" />
+        <text x="804" y="457" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="600" font-size="11" fill="var(--green)">Successful</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="trust">
+  <div class="wrap">
+    <span class="label">Trusted by class reps at</span>
+    <span class="crest">UNILAG</span>
+    <span class="crest">YABATECH</span>
+    <span class="crest">UNILORIN</span>
+    <span class="crest">FUTA</span>
+    <span class="crest">LASPOTECH</span>
+  </div>
+</section>
+
+<section class="steps">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Upload your class list once</h3>
+        <p>CSV or Excel — every matric number gets checked before anyone can pay a kobo.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Drop the link in the group chat</h3>
+        <p>One link works for the whole class, for the whole session.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Watch the roster fill up</h3>
+        <p>No more pinned "who has paid?" messages — the dashboard already knows.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="cta">
+    <h2>Running dues for your set this session?</h2>
+    <p>Set up your first campaign in a few minutes.</p>
+    <a class="btn btn-primary" href="#">Get started free</a>
+  </div>
+</div>
+
+</body>
+</html>
