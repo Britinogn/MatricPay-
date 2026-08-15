@@ -1,21 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requireAnyRole = exports.requireRole = void 0;
-const requireRole = (allowedRoles) => {
-    return (req, res, next) => {
-        const user = req.user;
-        if (!user) {
-            res.status(401).json({ error: "Unauthorized" });
+exports.requireAnyRole = void 0;
+exports.requireRole = requireRole;
+const http_error_1 = require("../utils/http-error");
+function requireRole(allowedRoles) {
+    return function roleMiddleware(request, _response, next) {
+        if (!request.user) {
+            next(new http_error_1.HttpError(401, "Unauthorized"));
             return;
         }
-        if (!allowedRoles.includes(user.role)) {
-            res.status(403).json({ error: "Forbidden: Insufficient permissions" });
+        if (!allowedRoles.includes(request.user.role)) {
+            next(new http_error_1.HttpError(403, "Forbidden: Insufficient permissions"));
             return;
         }
         next();
     };
-};
-exports.requireRole = requireRole;
-const requireAnyRole = (allowedRoles) => (0, exports.requireRole)(allowedRoles);
-exports.requireAnyRole = requireAnyRole;
+}
+exports.requireAnyRole = requireRole;
 //# sourceMappingURL=role.middleware.js.map

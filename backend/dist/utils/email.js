@@ -3,7 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPasswordResetEmail = exports.sendWelcomeEmail = void 0;
+exports.sendWelcomeEmail = sendWelcomeEmail;
+exports.sendPasswordResetEmail = sendPasswordResetEmail;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const promises_1 = __importDefault(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
@@ -17,14 +18,32 @@ const transporter = nodemailer_1.default.createTransport({
         pass: env_1.env.EMAIL_PASS,
     },
 });
-const getTemplateContent = async (templateName) => {
+function escapeHtml(value) {
+    return value.replace(/[&<>'"]/g, (character) => {
+        const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "'": "&#39;",
+            '"': "&quot;",
+        };
+        return entities[character];
+    });
+}
+async function getTemplateContent(templateName) {
     const templatePath = path_1.default.join(__dirname, "..", "templates", "email", templateName);
     return promises_1.default.readFile(templatePath, "utf-8");
-};
-const sendWelcomeEmail = async (email, name) => {
+}
+function renderTemplate(template, variables) {
+    return Object.entries(variables).reduce((content, [key, value]) => {
+        return content.replaceAll(`{{${key}}}`, escapeHtml(value));
+    }, template);
+}
+async function sendWelcomeEmail(email, name) {
     try {
-        let htmlContent = await getTemplateContent("welcome.html");
-        htmlContent = htmlContent.replace("{{name}}", name);
+        const htmlContent = renderTemplate(await getTemplateContent("welcome.html"), {
+            name,
+        });
         await transporter.sendMail({
             from: env_1.env.EMAIL_FROM,
             to: email,
@@ -35,13 +54,13 @@ const sendWelcomeEmail = async (email, name) => {
     catch (error) {
         console.error(`Failed to send welcome email to ${email}`, error);
     }
-};
-exports.sendWelcomeEmail = sendWelcomeEmail;
-const sendPasswordResetEmail = async (email, resetToken) => {
+}
+async function sendPasswordResetEmail(email, resetToken) {
     try {
-        const resetUrl = `${env_1.env.CLIENT_URL}/reset-password?token=${resetToken}`;
-        let htmlContent = await getTemplateContent("reset-password.html");
-        htmlContent = htmlContent.replace("{{resetUrl}}", resetUrl);
+        const resetUrl = `${env_1.env.CLIENT_URL}/reset-password?token=${encodeURIComponent(resetToken)}`;
+        const htmlContent = renderTemplate(await getTemplateContent("reset-password.html"), {
+            resetUrl,
+        });
         await transporter.sendMail({
             from: env_1.env.EMAIL_FROM,
             to: email,
@@ -52,6 +71,5 @@ const sendPasswordResetEmail = async (email, resetToken) => {
     catch (error) {
         console.error(`Failed to send password reset email to ${email}`, error);
     }
-};
-exports.sendPasswordResetEmail = sendPasswordResetEmail;
+}
 //# sourceMappingURL=email.js.map

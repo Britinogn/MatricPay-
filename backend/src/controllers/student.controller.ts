@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { parseStudentsCsv } from "../parsers/csv.parser";
+import { parseStudentsExcel } from "../parsers/excel.parser";
 import { studentService } from "../services/student.service";
 import { HttpError } from "../utils/http-error";
 import {
@@ -42,6 +43,24 @@ export class StudentController {
     const data = CreateStudentsSchema.parse({ students });
     const result = await studentService.addStudents(user, id, data, {
       method: "csv",
+      originalName: request.file.originalname,
+    });
+
+    response.status(201).json(result);
+  }
+
+  async importExcel(request: Request, response: Response): Promise<void> {
+    const user = requireAuthenticatedUser(request);
+    const { id } = CampaignIdParamSchema.parse(request.params);
+
+    if (!request.file) {
+      throw new HttpError(400, "Excel file is required");
+    }
+
+    const students = parseStudentsExcel(request.file.buffer);
+    const data = CreateStudentsSchema.parse({ students });
+    const result = await studentService.addStudents(user, id, data, {
+      method: "xlsx",
       originalName: request.file.originalname,
     });
 

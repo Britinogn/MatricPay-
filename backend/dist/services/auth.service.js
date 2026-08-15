@@ -4,14 +4,30 @@ exports.authService = exports.AuthService = void 0;
 const client_1 = require("@prisma/client");
 const user_repository_1 = require("../repositories/user.repository");
 const email_1 = require("../utils/email");
+const http_error_1 = require("../utils/http-error");
 const jwt_1 = require("../utils/jwt");
 const password_1 = require("../utils/password");
+const supabase_auth_1 = require("../utils/supabase-auth");
 const token_1 = require("../utils/token");
+function toSafeUser(user) {
+    return {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+    };
+}
+function createAuthResponse(user) {
+    return {
+        user: toSafeUser(user),
+        token: (0, jwt_1.signAccessToken)({ userId: user.id, role: user.role }),
+    };
+}
 class AuthService {
     async register(data) {
         const existingUser = await user_repository_1.userRepository.findByEmail(data.email);
         if (existingUser) {
-            throw new Error("Email is already in use");
+            throw new http_error_1.HttpError(409, "Email is already in use");
         }
         const passwordHash = await (0, password_1.hashPassword)(data.password);
         const user = await user_repository_1.userRepository.create({
@@ -20,88 +36,54 @@ class AuthService {
             passwordHash,
             role: "organizer",
         });
-        // Send welcome email asynchronously without awaiting to not block the response
         void (0, email_1.sendWelcomeEmail)(user.email, user.fullName);
-        const token = (0, jwt_1.signAccessToken)({ userId: user.id, role: user.role });
-        return {
-            user: {
-                id: user.id,
-                fullName: user.fullName,
-                email: user.email,
-                role: user.role,
-            },
-            token,
-        };
+        return createAuthResponse(user);
     }
     async login(data) {
         const user = await user_repository_1.userRepository.findByEmail(data.email);
-        if (!user || !user.passwordHash) {
-            throw new Error("Invalid email or password");
+        if (!user?.passwordHash) {
+            throw new http_error_1.HttpError(401, "Invalid email or password");
         }
         if (user.status === client_1.UserStatus.suspended) {
-            throw new Error("Account is suspended");
+            throw new http_error_1.HttpError(403, "Account is suspended");
         }
         const isValidPassword = await (0, password_1.comparePassword)(data.password, user.passwordHash);
         if (!isValidPassword) {
-            throw new Error("Invalid email or password");
+            throw new http_error_1.HttpError(401, "Invalid email or password");
         }
-        const token = (0, jwt_1.signAccessToken)({ userId: user.id, role: user.role });
-        return {
-            user: {
-                id: user.id,
-                fullName: user.fullName,
-                email: user.email,
-                role: user.role,
-            },
-            token,
-        };
+        return createAuthResponse(user);
     }
     async googleSync(data) {
-        let user = await user_repository_1.userRepository.findBySupabaseId(data.supabaseAuthId);
+        const verifiedUser = (0, supabase_auth_1.verifySupabaseAccessToken)(data.accessToken);
+        let user = await user_repository_1.userRepository.findBySupabaseId(verifiedUser.supabaseAuthId);
         if (!user) {
-            // Check if user exists by email but without supabaseAuthId
-            user = await user_repository_1.userRepository.findByEmail(data.email);
+            user = await user_repository_1.userRepository.findByEmail(verifiedUser.email);
             if (user) {
-                // Link the existing account
                 user = await user_repository_1.userRepository.update(user.id, {
-                    supabaseAuthId: data.supabaseAuthId,
+                    supabaseAuthId: verifiedUser.supabaseAuthId,
                 });
             }
             else {
-                // Create new account
                 user = await user_repository_1.userRepository.create({
-                    fullName: data.fullName,
-                    email: data.email,
-                    supabaseAuthId: data.supabaseAuthId,
+                    fullName: verifiedUser.fullName,
+                    email: verifiedUser.email,
+                    supabaseAuthId: verifiedUser.supabaseAuthId,
                     role: "organizer",
                 });
                 void (0, email_1.sendWelcomeEmail)(user.email, user.fullName);
             }
         }
         if (user.status === client_1.UserStatus.suspended) {
-            throw new Error("Account is suspended");
+            throw new http_error_1.HttpError(403, "Account is suspended");
         }
-        const token = (0, jwt_1.signAccessToken)({ userId: user.id, role: user.role });
-        return {
-            user: {
-                id: user.id,
-                fullName: user.fullName,
-                email: user.email,
-                role: user.role,
-            },
-            token,
-        };
+        return createAuthResponse(user);
     }
     async forgotPassword(data) {
         const user = await user_repository_1.userRepository.findByEmail(data.email);
-        // We always return success to prevent email enumeration,
-        // but we only process if the user exists and doesn't rely solely on Google Auth
-        if (user && user.passwordHash) {
+        if (user?.passwordHash) {
             const resetToken = (0, token_1.generateResetToken)();
             const tokenHash = (0, token_1.hashResetToken)(resetToken);
-            // Expire in 1 hour
-            const expiresAt = new Date();
-            expiresAt.setHours(expiresAt.getHours() + 1);
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
             await user_repository_1.userRepository.update(user.id, {
                 passwordResetTokenHash: tokenHash,
                 passwordResetExpiresAt: expiresAt,
@@ -114,8 +96,8 @@ class AuthService {
     async resetPassword(data) {
         const tokenHash = (0, token_1.hashResetToken)(data.token);
         const user = await user_repository_1.userRepository.findByResetTokenHash(tokenHash);
-        if (!user || !user.passwordResetExpiresAt || new Date() > user.passwordResetExpiresAt) {
-            throw new Error("Invalid or expired reset token");
+        if (!user?.passwordResetExpiresAt || new Date() > user.passwordResetExpiresAt) {
+            throw new http_error_1.HttpError(400, "Invalid or expired reset token");
         }
         const passwordHash = await (0, password_1.hashPassword)(data.newPassword);
         await user_repository_1.userRepository.update(user.id, {

@@ -3,92 +3,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authController = exports.AuthController = void 0;
 const auth_service_1 = require("../services/auth.service");
 const auth_validator_1 = require("../validators/auth.validator");
-const zod_1 = require("zod");
 class AuthController {
-    async register(req, res) {
-        try {
-            const data = auth_validator_1.RegisterSchema.parse(req.body);
-            const result = await auth_service_1.authService.register(data);
-            res.status(201).json(result);
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(400).json({ error: "Validation failed", details: error.issues });
-                return;
-            }
-            res.status(400).json({ error: error.message || "Registration failed" });
-        }
+    async register(request, response) {
+        const data = auth_validator_1.RegisterSchema.parse(request.body);
+        const result = await auth_service_1.authService.register(data);
+        response.status(201).json(result);
     }
-    async login(req, res) {
-        try {
-            const data = auth_validator_1.LoginSchema.parse(req.body);
-            const result = await auth_service_1.authService.login(data);
-            res.status(200).json(result);
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(400).json({ error: "Validation failed", details: error.issues });
-                return;
-            }
-            res.status(401).json({ error: error.message || "Login failed" });
-        }
+    async login(request, response) {
+        const data = auth_validator_1.LoginSchema.parse(request.body);
+        const result = await auth_service_1.authService.login(data);
+        response.status(200).json(result);
     }
-    async googleSync(req, res) {
-        try {
-            const data = auth_validator_1.GoogleSyncSchema.parse(req.body);
-            const result = await auth_service_1.authService.googleSync(data);
-            res.status(200).json(result);
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(400).json({ error: "Validation failed", details: error.issues });
-                return;
-            }
-            res.status(400).json({ error: error.message || "Google sync failed" });
-        }
+    async googleSync(request, response) {
+        const data = auth_validator_1.GoogleSyncSchema.parse(request.body);
+        const result = await auth_service_1.authService.googleSync(data);
+        response.status(200).json(result);
     }
-    async forgotPassword(req, res) {
-        try {
-            const data = auth_validator_1.ForgotPasswordSchema.parse(req.body);
-            const result = await auth_service_1.authService.forgotPassword(data);
-            res.status(200).json(result);
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(400).json({ error: "Validation failed", details: error.issues });
-                return;
-            }
-            res.status(400).json({ error: error.message || "Failed to process request" });
-        }
+    async forgotPassword(request, response) {
+        const data = auth_validator_1.ForgotPasswordSchema.parse(request.body);
+        const result = await auth_service_1.authService.forgotPassword(data);
+        response.status(200).json(result);
     }
-    async resetPassword(req, res) {
-        try {
-            const data = auth_validator_1.ResetPasswordSchema.parse(req.body);
-            const result = await auth_service_1.authService.resetPassword(data);
-            res.status(200).json(result);
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(400).json({ error: "Validation failed", details: error.issues });
-                return;
-            }
-            res.status(400).json({ error: error.message || "Failed to reset password" });
-        }
+    async resetPassword(request, response) {
+        const data = auth_validator_1.ResetPasswordSchema.parse(request.body);
+        const result = await auth_service_1.authService.resetPassword(data);
+        response.status(200).json(result);
     }
-    async me(req, res) {
-        // req.user will be populated by the auth middleware
-        const user = req.user;
-        if (!user) {
-            res.status(401).json({ error: "Unauthorized" });
-            return;
-        }
-        res.status(200).json({
-            user: {
-                id: user.id,
-                fullName: user.fullName,
-                email: user.email,
-                role: user.role,
-            },
+    async me(request, response) {
+        response.status(200).json({
+            user: request.user
+                ? {
+                    id: request.user.id,
+                    fullName: request.user.fullName,
+                    email: request.user.email,
+                    role: request.user.role,
+                }
+                : null,
         });
     }
 }
