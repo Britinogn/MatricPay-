@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoute } from "./context/ProtectedRoute";
+// import { AuthProvider } from "./context/AuthContext";
+// import { ProtectedRoute } from "./context/ProtectedRoute";
+import { ProtectedRoute } from "./layouts/ProtectedRoute";
 
 //auth
 import LoginPage from "./pages/auth/LoginPage";
@@ -24,9 +25,9 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 
 function App() {
   return (
-    <AuthProvider>
       <BrowserRouter>
         <Toaster position="top-center" />
+        
         <Routes>
           {/* Public — no auth */}
           <Route path="/login" element={<LoginPage />} />
@@ -50,7 +51,6 @@ function App() {
         </Routes>
 
       </BrowserRouter>
-    </AuthProvider>
   )
 }
 

@@ -1,20 +1,5 @@
 :root {
-    --background: #12160F;
-    --surface: #191F19;
-    --border: #2A322C;
-    --primary: #2F6F4E;
-    --primary-hover: #3B8562;
-    --accent: #D9AE49;
-    --accent-hover: #E6BE63;
-    --text-primary: #F7F3E8;
-    --text-muted: #9AA79D;
-
-    --font-body: 'Inter', sans-serif;
-    --font-display: 'Fraunces', serif;
-    --font-mono: 'Space Mono', monospace;
-}
-
-html.light {
+    /* Light values become the default */
     --background: #F7F3E8;
     --surface: #FFFFFF;
     --border: #E4DCC8;
@@ -24,6 +9,23 @@ html.light {
     --accent-hover: #D6A73C;
     --text-primary: #1B2B22;
     --text-muted: #4A5A50;
+
+    --font-body: 'Inter', sans-serif;
+    --font-display: 'Fraunces', serif;
+    --font-mono: 'Space Mono', monospace;
+}
+
+html.dark {
+    /* Dark values */
+    --background: #12160F;
+    --surface: #191F19;
+    --border: #2A322C;
+    --primary: #2F6F4E;
+    --primary-hover: #3B8562;
+    --accent: #D9AE49;
+    --accent-hover: #E6BE63;
+    --text-primary: #F7F3E8;
+    --text-muted: #9AA79D;
 }
 
 html {
