@@ -4,6 +4,7 @@ exports.campaignService = exports.CampaignService = void 0;
 const client_1 = require("@prisma/client");
 const env_1 = require("../config/env");
 const campaign_repository_1 = require("../repositories/campaign.repository");
+const user_repository_1 = require("../repositories/user.repository");
 const http_error_1 = require("../utils/http-error");
 const slug_1 = require("../utils/slug");
 const MAX_SLUG_ATTEMPTS = 5;
@@ -157,6 +158,11 @@ class CampaignService {
         }
         if (campaign.expiresAt && campaign.expiresAt.getTime() < Date.now()) {
             throw new http_error_1.HttpError(400, "Expired campaigns cannot be activated");
+        }
+        // Check that organizer has set up payout account
+        const organizer = await user_repository_1.userRepository.findById(campaign.organizerId);
+        if (!organizer?.paystackSubaccountCode) {
+            throw new http_error_1.HttpError(400, "Payout account must be set up before activating campaigns");
         }
         if (campaign.campaignType === client_1.CampaignType.restricted) {
             const studentCount = await campaign_repository_1.campaignRepository.countStudents(campaign.id);

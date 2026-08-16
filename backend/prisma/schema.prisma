@@ -122,6 +122,10 @@ model User {
   passwordResetRequestedAt DateTime? @map("password_reset_requested_at")
   role           UserRole   @default(organizer)
   status         UserStatus @default(active)
+  paystackSubaccountCode     String?    @unique @map("paystack_subaccount_code")
+  settlementBankCode         String?    @map("settlement_bank_code")
+  settlementAccountNumber    String?    @map("settlement_account_number")
+  settlementAccountName      String?    @map("settlement_account_name")
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
 

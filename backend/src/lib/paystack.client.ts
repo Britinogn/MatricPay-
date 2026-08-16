@@ -8,6 +8,9 @@ export interface InitializeTransactionPayload {
   reference: string;
   callback_url?: string;
   metadata?: Record<string, any>;
+  subaccount?: string; // subaccount code for settlement
+  bearer?: "account" | "subaccount"; // who bears the transaction fee
+  transaction_charge?: number; // platform fee in kobo
 }
 
 export interface InitializeTransactionResponse {
@@ -34,6 +37,37 @@ export interface VerifyTransactionData {
     email: string;
     customer_code: string;
   };
+}
+
+export interface ResolveAccountPayload {
+  account_number: string;
+  bank_code: string;
+}
+
+export interface ResolveAccountResponse {
+  account_name: string;
+  account_number: string;
+}
+
+export interface CreateSubaccountPayload {
+  business_name: string;
+  settlement_bank: string; // bank code
+  account_number: string;
+  percentage_charge?: number;
+}
+
+export interface CreateSubaccountResponse {
+  subaccount_code: string;
+  business_name: string;
+  settlement_bank: string;
+  account_number: string;
+  percentage_charge: number;
+}
+
+export interface UpdateSubaccountPayload {
+  settlement_bank?: string;
+  account_number?: string;
+  business_name?: string;
 }
 
 export class PaystackClient {
@@ -95,6 +129,89 @@ export class PaystackClient {
     } catch (error) {
       if (error instanceof HttpError) throw error;
       throw new HttpError(502, `Paystack verification error: ${(error as Error).message}`);
+    }
+  }
+
+  async resolveAccountNumber(
+    payload: ResolveAccountPayload
+  ): Promise<ResolveAccountResponse> {
+    try {
+      const params = new URLSearchParams({
+        account_number: payload.account_number,
+        bank_code: payload.bank_code,
+      });
+
+      const response = await fetch(`${this.baseUrl}/bank/resolve?${params.toString()}`, {
+        method: "GET",
+        headers: this.headers,
+      });
+
+      const body = await response.json();
+
+      if (!response.ok || !body.status) {
+        throw new HttpError(
+          response.status >= 400 && response.status < 500 ? response.status : 502,
+          body.message || "Failed to resolve account number"
+        );
+      }
+
+      return body.data as ResolveAccountResponse;
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      throw new HttpError(502, `Paystack account resolution error: ${(error as Error).message}`);
+    }
+  }
+
+  async createSubaccount(
+    payload: CreateSubaccountPayload
+  ): Promise<CreateSubaccountResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/subaccount`, {
+        method: "POST",
+        headers: this.headers,
+        body: JSON.stringify(payload),
+      });
+
+      const body = await response.json();
+
+      if (!response.ok || !body.status) {
+        throw new HttpError(
+          response.status >= 400 && response.status < 500 ? response.status : 502,
+          body.message || "Failed to create subaccount"
+        );
+      }
+
+      return body.data as CreateSubaccountResponse;
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      throw new HttpError(502, `Paystack subaccount creation error: ${(error as Error).message}`);
+    }
+  }
+
+  async updateSubaccount(
+    code: string,
+    payload: UpdateSubaccountPayload
+  ): Promise<CreateSubaccountResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/subaccount/${encodeURIComponent(code)}`, {
+        method: "PUT",
+        headers: this.headers,
+        body: JSON.stringify(payload),
+      });
+
+      const body = await response.json();
+
+      if (!response.ok || !body.status) {
+        throw new HttpError(
+          response.status >= 400 && response.status < 500 ? response.status : 502,
+          body.message || "Failed to update subaccount"
+        );
+      }
+
+      return body.data as CreateSubaccountResponse;
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      throw new HttpError(502, `Paystack subaccount update error: ${(error as Error).message}`);
     }
   }
 

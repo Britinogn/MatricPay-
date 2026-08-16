@@ -143,7 +143,13 @@ export class PaymentService {
     const amountInKobo = Math.round(targetAmount * 100);
     const callbackUrl = `${env.CLIENT_URL}/pay/${campaign.slug}/success?reference=${reference}`;
 
-    const paystackRes = await paystackClient.initializeTransaction({
+    // Fetch organizer to get subaccount code
+    const organizer = await prisma.user.findUnique({
+      where: { id: campaign.organizerId },
+      select: { paystackSubaccountCode: true },
+    });
+
+    const initPayload: any = {
       email: student.email || `student.${student.matricNumber.toLowerCase()}@matricpay.internal`,
       amount: amountInKobo,
       reference,
@@ -154,7 +160,16 @@ export class PaymentService {
         matricNumber: student.matricNumber,
         paymentId: paymentRecord.id,
       },
-    });
+    };
+
+    // Add subaccount settlement if organizer has one
+    if (organizer?.paystackSubaccountCode) {
+      initPayload.subaccount = organizer.paystackSubaccountCode;
+      initPayload.bearer = "subaccount"; // Organizer bears Paystack's processing fee
+      initPayload.transaction_charge = Math.round(amountInKobo * 0.02); // 2% platform fee
+    }
+
+    const paystackRes = await paystackClient.initializeTransaction(initPayload);
 
     return {
       authorizationUrl: paystackRes.authorization_url,

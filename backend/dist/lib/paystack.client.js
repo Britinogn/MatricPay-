@@ -52,6 +52,63 @@ class PaystackClient {
             throw new http_error_1.HttpError(502, `Paystack verification error: ${error.message}`);
         }
     }
+    async resolveAccountNumber(payload) {
+        try {
+            const response = await fetch(`${this.baseUrl}/bank/resolve`, {
+                method: "POST",
+                headers: this.headers,
+                body: JSON.stringify(payload),
+            });
+            const body = await response.json();
+            if (!response.ok || !body.status) {
+                throw new http_error_1.HttpError(response.status >= 400 && response.status < 500 ? response.status : 502, body.message || "Failed to resolve account number");
+            }
+            return body.data;
+        }
+        catch (error) {
+            if (error instanceof http_error_1.HttpError)
+                throw error;
+            throw new http_error_1.HttpError(502, `Paystack account resolution error: ${error.message}`);
+        }
+    }
+    async createSubaccount(payload) {
+        try {
+            const response = await fetch(`${this.baseUrl}/subaccount`, {
+                method: "POST",
+                headers: this.headers,
+                body: JSON.stringify(payload),
+            });
+            const body = await response.json();
+            if (!response.ok || !body.status) {
+                throw new http_error_1.HttpError(response.status >= 400 && response.status < 500 ? response.status : 502, body.message || "Failed to create subaccount");
+            }
+            return body.data;
+        }
+        catch (error) {
+            if (error instanceof http_error_1.HttpError)
+                throw error;
+            throw new http_error_1.HttpError(502, `Paystack subaccount creation error: ${error.message}`);
+        }
+    }
+    async updateSubaccount(code, payload) {
+        try {
+            const response = await fetch(`${this.baseUrl}/subaccount/${encodeURIComponent(code)}`, {
+                method: "PUT",
+                headers: this.headers,
+                body: JSON.stringify(payload),
+            });
+            const body = await response.json();
+            if (!response.ok || !body.status) {
+                throw new http_error_1.HttpError(response.status >= 400 && response.status < 500 ? response.status : 502, body.message || "Failed to update subaccount");
+            }
+            return body.data;
+        }
+        catch (error) {
+            if (error instanceof http_error_1.HttpError)
+                throw error;
+            throw new http_error_1.HttpError(502, `Paystack subaccount update error: ${error.message}`);
+        }
+    }
     verifyWebhookSignature(rawBody, signature) {
         if (!signature)
             return false;

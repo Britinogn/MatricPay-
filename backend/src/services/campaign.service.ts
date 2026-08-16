@@ -1,6 +1,7 @@
 import { Campaign, CampaignStatus, CampaignType, Prisma, UserRole } from "@prisma/client";
 import { env } from "../config/env";
 import { campaignRepository } from "../repositories/campaign.repository";
+import { userRepository } from "../repositories/user.repository";
 import { HttpError } from "../utils/http-error";
 import { generateCampaignSlug } from "../utils/slug";
 import type {
@@ -212,6 +213,15 @@ export class CampaignService {
 
     if (campaign.expiresAt && campaign.expiresAt.getTime() < Date.now()) {
       throw new HttpError(400, "Expired campaigns cannot be activated");
+    }
+
+    // Check that organizer has set up payout account
+    const organizer = await userRepository.findById(campaign.organizerId);
+    if (!organizer?.paystackSubaccountCode) {
+      throw new HttpError(
+        400,
+        "Payout account must be set up before activating campaigns"
+      );
     }
 
     if (campaign.campaignType === CampaignType.restricted) {
