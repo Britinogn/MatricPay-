@@ -43,7 +43,22 @@ export default function RegisterPage() {
         password: values.password,
       });
       toast.success("Account created successfully");
+      
       navigate("/");
+
+      // const data = await registerMutation.mutateAsync({
+      //   fullName: values.fullName,
+      //   email: values.email,
+      //   password: values.password,
+      // });
+      // toast.success("Account created successfully");
+
+      // if (data.user.role === "admin") {
+      //   navigate("/admin");
+      // } else {
+      //   navigate("/dashboard/overview");
+      // }
+
     } catch (err: unknown) {
         const axiosError = err as {
             response?: { data?: { message?: string } };

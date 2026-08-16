@@ -2,26 +2,35 @@ import { NavLink } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DashboardSquare01Icon,
-  PlusSignIcon,
+  // PlusSignIcon,
   CreditCardIcon,
+  Megaphone01Icon,
+  MoreHorizontalCircle01Icon
 } from "@hugeicons/core-free-icons";
 
+// const navItems = [
+//   {
+//     label: "Campaigns",
+//     to: "/",
+//     icon: DashboardSquare01Icon,
+//   },
+//   {
+//     label: "New Campaign",
+//     to: "/campaigns/new",
+//     icon: PlusSignIcon,
+//   },
+//   {
+//     label: "Payout Account",
+//     to: "/payout-account",
+//     icon: CreditCardIcon,
+//   },
+// ];
+
 const navItems = [
-  {
-    label: "Campaigns",
-    to: "/",
-    icon: DashboardSquare01Icon,
-  },
-  {
-    label: "New Campaign",
-    to: "/campaigns/new",
-    icon: PlusSignIcon,
-  },
-  {
-    label: "Payout Account",
-    to: "/payout-account",
-    icon: CreditCardIcon,
-  },
+  { label: "Home", to: "/dashboard/overview", icon: DashboardSquare01Icon },
+  { label: "Campaigns", to: "/dashboard/campaigns", icon: Megaphone01Icon },
+  { label: "Payouts", to: "/dashboard/payout-account", icon: CreditCardIcon },
+  { label: "More", to: "/dashboard/more", icon: MoreHorizontalCircle01Icon },
 ];
 
 interface SidebarProps {

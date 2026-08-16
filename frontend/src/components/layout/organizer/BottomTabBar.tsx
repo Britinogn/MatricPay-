@@ -3,17 +3,23 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Home01Icon,
   Megaphone01Icon,
-  UserMultiple02Icon,
+  // UserMultiple02Icon,
   CreditCardIcon,
   MoreHorizontalCircle01Icon,
 } from "@hugeicons/core-free-icons";
 
+// const tabs = [
+//   { label: "Home", to: "/", icon: Home01Icon },
+//   { label: "Campaigns", to: "/campaigns", icon: Megaphone01Icon },
+//   { label: "Students", to: "/students", icon: UserMultiple02Icon },
+//   { label: "Payouts", to: "/payout-account", icon: CreditCardIcon },
+//   { label: "More", to: "/more", icon: MoreHorizontalCircle01Icon },
+// ];
 const tabs = [
-  { label: "Home", to: "/", icon: Home01Icon },
-  { label: "Campaigns", to: "/campaigns", icon: Megaphone01Icon },
-  { label: "Students", to: "/students", icon: UserMultiple02Icon },
-  { label: "Payouts", to: "/payout-account", icon: CreditCardIcon },
-  { label: "More", to: "/more", icon: MoreHorizontalCircle01Icon },
+  { label: "Home", to: "/dashboard/overview", icon: Home01Icon },
+  { label: "Campaigns", to: "/dashboard/campaigns", icon: Megaphone01Icon },
+  { label: "Payouts", to: "/dashboard/payout-account", icon: CreditCardIcon },
+  { label: "More", to: "/dashboard/more", icon: MoreHorizontalCircle01Icon },
 ];
 
 export default function BottomTabBar() {

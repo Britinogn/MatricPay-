@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { Navigate } from "react-router-dom";
 // import { AuthProvider } from "./context/AuthContext";
 // import { ProtectedRoute } from "./context/ProtectedRoute";
 import { ProtectedRoute } from "./layouts/ProtectedRoute";
@@ -37,13 +38,14 @@ function App() {
           <Route path="/pay/:slug/success" element={<PaymentSuccessPage  />} />
 
           {/* Organizer — requires auth */}
-          <Route element={<ProtectedRoute allowedRoles={["organizer"]} />}>
-            <Route element={<OrganizerLayout />}>
-              <Route path="/" element={<CampaignListPage />} />
-              <Route path="/campaigns/new" element={<CreateCampaignPage />} />
-              <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
-              <Route path="/payout-account" element={<PayoutAccountPage />} />
-            </Route>
+          <Route path="/dashboard" element={<OrganizerLayout />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<CampaignListPage />} />
+            <Route path="campaigns" element={<CampaignListPage />} />
+            <Route path="campaigns/new" element={<CreateCampaignPage />} />
+            <Route path="campaigns/:id" element={<CampaignDetailPage />} />
+            <Route path="payout-account" element={<PayoutAccountPage />} />
+            {/* <Route path="more" element={<MorePage />} /> */}
           </Route>
 
           {/* Admin — requires auth + admin role */}
