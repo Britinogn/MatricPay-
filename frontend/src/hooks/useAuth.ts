@@ -18,19 +18,19 @@ export function clearToken() {
 }
 
 /** Current user – the single source of truth for auth state */
-export function useCurrentUser(){
+export function useCurrentUser() {
     const token = getToken();
 
     return useQuery({
         queryKey: ["auth", "me"],
         queryFn: async () => {
-            const {data} = await api.get<{ data: AuthUser}>("/auth/me")
-            return data.data
-        },
+            const { data } = await api.get<{ user: AuthUser }>("/auth/me");
+            return data.user;          // ← correct
+    },
         enabled: !!token,
-        staleTime:1000 * 60 * 5, //5 minutes
+        staleTime: 1000 * 60 * 5,
         retry: false,
-    })
+    });
 }
 
 export function useLogin(){
