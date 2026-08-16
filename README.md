@@ -132,28 +132,6 @@ matricpay/
 - PostgreSQL Database (e.g. Supabase DB)
 - Paystack Account (Test Mode API Keys)
 
-### 2. Environment Configuration
-Create a `.env` file in the `backend/` directory:
-
-```env
-APP_NAME=MatricPay
-APP_ENV=development
-APP_PORT=5000
-APP_URL=http://localhost:5000
-CLIENT_URL=http://localhost:5173
-
-DATABASE_URL="postgresql://user:password@host:5432/dbname"
-
-JWT_SECRET="your_32_character_long_secret_key_here"
-JWT_EXPIRES_IN=1h
-
-PAYSTACK_SECRET_KEY=sk_test_b82e04638cff2e7f5048472154ef277c077de498
-PAYSTACK_PUBLIC_KEY=pk_test_f4501274befec9392787cb8110202d682443eb21
-
-ADMIN_EMAIL=admin@matricpay.com
-ADMIN_PASSWORD=AdminPassword123!
-```
-
 ### 3. Install & Start Backend
 ```bash
 cd backend
