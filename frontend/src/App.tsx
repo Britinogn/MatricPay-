@@ -38,14 +38,16 @@ function App() {
           <Route path="/pay/:slug/success" element={<PaymentSuccessPage  />} />
 
           {/* Organizer — requires auth */}
-          <Route path="/dashboard" element={<OrganizerLayout />}>
-            <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<CampaignListPage />} />
-            <Route path="campaigns" element={<CampaignListPage />} />
-            <Route path="campaigns/new" element={<CreateCampaignPage />} />
-            <Route path="campaigns/:id" element={<CampaignDetailPage />} />
-            <Route path="payout-account" element={<PayoutAccountPage />} />
-            {/* <Route path="more" element={<MorePage />} /> */}
+          <Route element={<ProtectedRoute allowedRoles={["organizer"]} />}>
+            <Route path="/dashboard" element={<OrganizerLayout />}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<CampaignListPage />} />
+              <Route path="campaigns" element={<CampaignListPage />} />
+              <Route path="campaigns/new" element={<CreateCampaignPage />} />
+              <Route path="campaigns/:id" element={<CampaignDetailPage />} />
+              <Route path="payout-account" element={<PayoutAccountPage />} />
+              {/* <Route path="more" element={<MorePage />} /> */}
+            </Route>
           </Route>
 
           {/* Admin — requires auth + admin role */}

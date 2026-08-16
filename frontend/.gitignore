@@ -31,4 +31,8 @@ dist-ssr
 
 # new 
 
-src/context/
+# Superseded by hooks/useAuth.ts + layouts/ProtectedRoute.tsx — kept locally for reference
+frontend/src/context/AuthContext.tsx
+frontend/src/context/auth-context.ts
+frontend/src/context/useAuth.ts
+frontend/src/context/ProtectedRoute.tsx
