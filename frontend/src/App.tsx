@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 // import { AuthProvider } from "./context/AuthContext";
 // import { ProtectedRoute } from "./context/ProtectedRoute";
 import { ProtectedRoute } from "./layouts/ProtectedRoute";
+import OrganizerLayout from "./layouts/OrganizerLayout/OrganizerLayout";
 
 //auth
 import LoginPage from "./pages/auth/LoginPage";
@@ -37,10 +38,12 @@ function App() {
 
           {/* Organizer — requires auth */}
           <Route element={<ProtectedRoute allowedRoles={["organizer"]} />}>
-            <Route path="/" element={<CampaignListPage />} />
-            <Route path="/payout-account" element={<PayoutAccountPage />} />
-            <Route path="/campaigns/new" element={<CreateCampaignPage />} />
-            <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
+            <Route element={<OrganizerLayout />}>
+              <Route path="/" element={<CampaignListPage />} />
+              <Route path="/campaigns/new" element={<CreateCampaignPage />} />
+              <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
+              <Route path="/payout-account" element={<PayoutAccountPage />} />
+            </Route>
           </Route>
 
           {/* Admin — requires auth + admin role */}
