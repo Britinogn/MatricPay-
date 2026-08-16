@@ -42,11 +42,16 @@ export class PaymentController {
       throw new HttpError(400, "Missing Paystack signature header");
     }
 
-    const rawBody = request.rawBody || JSON.stringify(request.body);
+    if (!request.rawBody) {
+      throw new HttpError(
+        500,
+        "Raw request body was not captured — check app.ts's express.json() verify callback"
+      );
+    }
 
     const result = await paymentService.handlePaystackWebhook(
       signature,
-      rawBody,
+      request.rawBody,
       request.body
     );
 
