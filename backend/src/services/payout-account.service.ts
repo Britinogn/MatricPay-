@@ -55,6 +55,17 @@ export class PayoutAccountService {
         );
         }
 
+        // Independently resolve the account before creating anything, regardless
+        // of whether the client already called /resolve. This guarantees the
+        // account number is genuinely valid, and that the name we store is what
+        // Paystack actually found — never something the client could supply
+        // directly. A mistyped account number throws here, before any
+        // subaccount exists.
+        const resolved = await paystackClient.resolveAccountNumber({
+        account_number: data.account_number,
+        bank_code: data.settlement_bank,
+        });
+
         // Call Paystack API to create subaccount
         const subaccountResponse = await paystackClient.createSubaccount({
         business_name: data.business_name,
@@ -63,12 +74,16 @@ export class PayoutAccountService {
         percentage_charge: data.percentage_charge,
         });
 
-        // Store subaccount code and details in user record
+        // Store subaccount code and details in user record — settlementAccountName
+        // is the resolved account holder's name, not the client-supplied
+        // business_name (those are two different things: business_name is an
+        // arbitrary label, settlementAccountName is who Paystack says owns the
+        // bank account).
         const updatedUser = await userRepository.update(userId, {
         paystackSubaccountCode: subaccountResponse.subaccount_code,
         settlementBankCode: data.settlement_bank,
         settlementAccountNumber: data.account_number,
-        settlementAccountName: subaccountResponse.business_name,
+        settlementAccountName: resolved.account_name,
         });
 
         // Log audit event
@@ -81,6 +96,7 @@ export class PayoutAccountService {
         metadata: {
             subaccount_code: subaccountResponse.subaccount_code,
             business_name: subaccountResponse.business_name,
+            resolved_account_name: resolved.account_name,
             settlement_bank: data.settlement_bank,
             account_number: data.account_number,
         },
@@ -110,6 +126,26 @@ export class PayoutAccountService {
         throw new HttpError(403, "Cannot update subaccount that does not belong to this user");
         }
 
+        // If the bank/account number is changing, independently re-resolve it
+        // first — same reasoning as createSubaccount: never trust that the
+        // client already confirmed the right name, verify it here regardless.
+        let resolvedAccountName: string | undefined;
+        if (data.settlement_bank !== undefined && data.account_number !== undefined) {
+        const resolved = await paystackClient.resolveAccountNumber({
+            account_number: data.account_number,
+            bank_code: data.settlement_bank,
+        });
+        resolvedAccountName = resolved.account_name;
+        } else if (data.settlement_bank !== undefined || data.account_number !== undefined) {
+        // Both must be provided together — resolving needs both to mean anything,
+        // and updating just one half would leave the subaccount pointing at a
+        // bank/account pair that was never actually verified as a real match.
+        throw new HttpError(
+            400,
+            "settlement_bank and account_number must be provided together"
+        );
+        }
+
         // Call Paystack API to update subaccount (only include provided fields)
         const updatePayload: any = {};
         if (data.business_name !== undefined) updatePayload.business_name = data.business_name;
@@ -122,7 +158,7 @@ export class PayoutAccountService {
         const updateData: Record<string, string> = {};
         if (data.settlement_bank !== undefined) updateData.settlementBankCode = data.settlement_bank;
         if (data.account_number !== undefined) updateData.settlementAccountNumber = data.account_number;
-        if (data.business_name !== undefined) updateData.settlementAccountName = data.business_name;
+        if (resolvedAccountName !== undefined) updateData.settlementAccountName = resolvedAccountName;
 
         const updatedUser = await userRepository.update(userId, updateData);
 

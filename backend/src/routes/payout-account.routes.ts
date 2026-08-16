@@ -5,14 +5,16 @@ import { asyncHandler } from "../utils/async-handler";
 
 export const payoutAccountRoutes = Router();
 
-// POST /organizer/payout-account/resolve - Resolve bank account name (PUBLIC, no auth)
+// All routes require authentication — including /resolve, since there's no
+// reason to let unauthenticated requests probe bank account names, and the
+// service layer already assumes request.user exists.
+payoutAccountRoutes.use(authMiddleware);
+
+// POST /organizer/payout-account/resolve - Resolve bank account name
 payoutAccountRoutes.post(
     "/resolve",
     asyncHandler(payoutAccountController.resolveAccount.bind(payoutAccountController))
 );
-
-// All routes below require authentication
-payoutAccountRoutes.use(authMiddleware);
 
 // POST /organizer/payout-account - Create new subaccount
 payoutAccountRoutes.post(
