@@ -4,7 +4,6 @@ import {
   DashboardSquare01Icon,
   PlusSignIcon,
   CreditCardIcon,
-//   Settings01Icon,
 } from "@hugeicons/core-free-icons";
 
 const navItems = [
@@ -25,15 +24,20 @@ const navItems = [
   },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+export default function Sidebar({ onNavigate }: SidebarProps) {
   return (
-    <aside className="hidden md:flex w-56 flex-col border-r border-(--border) bg-(--surface)">
+    <aside className="flex w-full md:w-56 flex-col bg-(--surface) md:border-r md:border-(--border)">
       <nav className="flex flex-col gap-1 p-3">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === "/"}
+            onClick={onNavigate}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                 isActive
@@ -48,7 +52,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-auto p-3">
+      <div className="mt-auto p-3 hidden md:block">
         <div className="rounded-xl border border-(--border) bg-(--background) p-3">
           <p className="text-xs text-(--text-muted)">Need help?</p>
           <p className="mt-1 text-sm font-medium text-(--text-primary)">

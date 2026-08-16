@@ -8,7 +8,10 @@ export default function OrganizerLayout() {
       <Topbar />
 
       <div className="flex">
-        <Sidebar />
+        {/* Desktop sidebar only */}
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
 
         <main className="flex-1 min-h-[calc(100vh-3.5rem)] p-4 md:p-6">
           <Outlet />
