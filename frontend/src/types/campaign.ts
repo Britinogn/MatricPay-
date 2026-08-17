@@ -5,7 +5,7 @@ export interface Campaign {
     organizerId: string;
     title: string;
     description: string | null;
-    amount: string; // Decimal comes as string from Prisma/JSON
+    amount: string | number; // Decimal comes as string from Prisma/JSON
     amountType: AmountType;
     currency: string;
     slug: string;
@@ -20,7 +20,7 @@ export interface Campaign {
 
 export interface CreateCampaignPayload {
     title: string;
-    description?: string;
+    description?: string | null;
     amount: number;
     amountType?: AmountType;
     currency?: string;

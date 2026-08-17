@@ -6,8 +6,10 @@ export function useCampaigns() {
   return useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
-      const { data } = await api.get<{ data: Campaign[] }>("/campaigns");
-      return data.data;
+      const res = await api.get("/campaigns");
+      // handle both shapes safely
+      const payload = res.data.data ?? res.data;
+      return payload.campaigns ?? payload;
     },
   });
 }
@@ -23,6 +25,17 @@ export function useCampaign(id: string | undefined) {
   });
 }
 
+// export function useCampaign(id: string | undefined) {
+//   return useQuery({
+//     queryKey: ["campaigns", id],
+//     queryFn: async () => {
+//       const res = await api.get<{ data: Campaign }>(`/campaigns/${id}`);
+//       return res.data.data;
+//     },
+//     enabled: !!id,
+//   });
+// }
+
 export function useCreateCampaign() {
   const queryClient = useQueryClient();
 
@@ -33,6 +46,31 @@ export function useCreateCampaign() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+  });
+}
+
+export function useUpdateCampaign() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Partial<CreateCampaignPayload>;
+    }) => {
+      const { data } = await api.patch<{ data: Campaign }>(
+        `/campaigns/${id}`,
+        payload
+      );
+      return data.data;
+    },
+    onSuccess: (campaign) => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
+      queryClient.setQueryData(["campaigns", campaign.id], campaign);
     },
   });
 }

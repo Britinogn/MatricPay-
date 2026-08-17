@@ -50,7 +50,7 @@ export default function CampaignDetailPage() {
             subtext={`${metrics.unpaidStudents} yet to pay`}
           />
           <StatCard
-            label="Total Members"
+            label="Total Students"
             value={String(metrics.totalStudents)}
             subtext={metrics.flaggedPayments > 0 ? `${metrics.flaggedPayments} flagged for review` : undefined}
           />

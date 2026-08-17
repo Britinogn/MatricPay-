@@ -17,6 +17,7 @@ import CampaignListPage from "./pages/organizer/CampaignListPage";
 import CreateCampaignPage from "./pages/organizer/CreateCampaignPage";
 import CampaignDetailPage from "./pages/organizer/CampaignDetailPage";
 import OverviewPage from "./pages/organizer/OverviewPage";
+import EditCampaignPage from "./pages/organizer/EditCampaignPage";
 
 // Public student flow
 import PublicPaymentPage from "./pages/public/PublicPaymentPage";
@@ -45,6 +46,7 @@ function App() {
               <Route path="overview" element={<OverviewPage />} />
               <Route path="campaigns" element={<CampaignListPage />} />
               <Route path="campaigns/new" element={<CreateCampaignPage />} />
+              <Route path="campaigns/:id/edit" element={<EditCampaignPage />} />
               <Route path="campaigns/:id" element={<CampaignDetailPage />} />
               <Route path="payout-account" element={<PayoutAccountPage />} />
               {/* <Route path="more" element={<MorePage />} /> */}

@@ -41,3 +41,10 @@ export default function CampaignListPage() {
     </div>
   );
 }
+
+
+// import { CampaignList } from "../../components/organizer";
+
+// // ...
+
+// <CampaignList campaigns={campaigns} />
