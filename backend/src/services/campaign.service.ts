@@ -266,6 +266,32 @@ export class CampaignService {
 
     return campaign;
   }
+
+  async deleteCampaign(user: AuthUser, campaignId: string) {
+  const campaign = await this.getOwnedCampaign(user, campaignId);
+
+  if (campaign.status !== CampaignStatus.draft) {
+    throw new HttpError(
+      400,
+      "Only draft campaigns can be deleted. Close active campaigns instead."
+    );
+  }
+
+  const paymentCount = await campaignRepository.countPayments(campaign.id);
+
+    if (paymentCount > 0) {
+      throw new HttpError(
+        400,
+        "Cannot delete a campaign that already has payments"
+      );
+    }
+
+    // Remove students first if cascade is not set on the relation
+    await campaignRepository.deleteStudentsByCampaignId(campaign.id);
+    await campaignRepository.delete(campaign.id);
+
+    return { success: true };
+  }
 }
 
 export const campaignService = new CampaignService();

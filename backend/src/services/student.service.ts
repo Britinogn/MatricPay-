@@ -208,6 +208,35 @@ export class StudentService {
 
     return campaign;
   }
+
+  async deleteStudent(user: AuthUser, campaignId: string, studentId: string) {
+  const campaign = await this.getOwnedCampaign(user, campaignId);
+
+  // Only allow edits on draft campaigns (same rule as add/import)
+  if (campaign.status !== CampaignStatus.draft) {
+    throw new HttpError(
+      400,
+      "Students can only be removed before campaign activation"
+    );
+  }
+
+  const student = await studentRepository.findByIdAndCampaignId(
+      studentId,
+      campaign.id
+    );
+
+    if (!student) {
+      throw new HttpError(404, "Student not found");
+    }
+
+    await studentRepository.deleteById(student.id);
+
+    return {
+      success: true,
+      message: "Student removed",
+    };
+  }
+
 }
 
 export const studentService = new StudentService();

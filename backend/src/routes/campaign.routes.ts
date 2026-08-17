@@ -20,3 +20,8 @@ campaignRoutes.patch(
   "/:id/status",
   asyncHandler(campaignController.updateStatus.bind(campaignController))
 );
+
+campaignRoutes.delete(
+  "/:id",
+  asyncHandler(campaignController.remove.bind(campaignController))
+);

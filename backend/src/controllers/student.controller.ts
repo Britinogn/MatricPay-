@@ -83,6 +83,29 @@ export class StudentController {
 
     response.status(200).json(result);
   }
+
+  async removeStudent(request: Request, response: Response): Promise<void> {
+    const campaignId =
+      typeof request.params.id === "string"
+        ? request.params.id
+        : request.params.id[0];
+    const studentId =
+      typeof request.params.studentId === "string"
+        ? request.params.studentId
+        : request.params.studentId[0];
+
+    if (!campaignId || !studentId) {
+      throw new HttpError(400, "Campaign id and student id are required");
+    }
+
+    await studentService.deleteStudent(request.user!, campaignId, studentId);
+
+    response.status(200).json({
+      success: true,
+      message: "Student removed",
+    });
+  }
+
 }
 
 export const studentController = new StudentController();

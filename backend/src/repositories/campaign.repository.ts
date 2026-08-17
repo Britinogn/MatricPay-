@@ -115,6 +115,19 @@ export class CampaignRepository {
       },
     });
   }
+
+  async countPayments(campaignId: string): Promise<number> {
+    return prisma.payment.count({ where: { campaignId } });
+  }
+
+  async deleteStudentsByCampaignId(campaignId: string): Promise<void> {
+    await prisma.student.deleteMany({ where: { campaignId } });
+  }
+
+  async delete(id: string): Promise<void> {
+    await prisma.campaign.delete({ where: { id } });
+  }
+
 }
 
 export const campaignRepository = new CampaignRepository();

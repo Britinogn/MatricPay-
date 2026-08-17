@@ -64,3 +64,8 @@ studentRoutes.post(
   upload.single("file"),
   asyncHandler(studentController.importExcel.bind(studentController))
 );
+
+studentRoutes.delete(
+  "/:id/students/:studentId",
+  asyncHandler(studentController.removeStudent.bind(studentController))
+);

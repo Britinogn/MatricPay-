@@ -143,6 +143,22 @@ export class StudentRepository {
   async createStudentImport(data: Prisma.StudentImportUncheckedCreateInput) {
     return prisma.studentImport.create({ data });
   }
+
+  async findByIdAndCampaignId(studentId: string, campaignId: string) {
+    return prisma.student.findFirst({
+      where: {
+        id: studentId,
+        campaignId,
+      },
+    });
+  }
+
+  async deleteById(studentId: string) {
+    return prisma.student.delete({
+      where: { id: studentId },
+    });
+  }
+
 }
 
 export const studentRepository = new StudentRepository();

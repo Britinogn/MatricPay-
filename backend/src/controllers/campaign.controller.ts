@@ -67,6 +67,24 @@ export class CampaignController {
 
     response.status(200).json(result);
   }
+
+  async remove(request: Request, response: Response): Promise<void> {
+    const id =
+      typeof request.params.id === "string"
+        ? request.params.id
+        : request.params.id[0];
+
+    if (!id) {
+      throw new HttpError(400, "Campaign id is required");
+    }
+
+    await campaignService.deleteCampaign(request.user!, id);
+
+    response.status(200).json({
+      success: true,
+      message: "Campaign deleted",
+    });
+  }
 }
 
 export const campaignController = new CampaignController();
