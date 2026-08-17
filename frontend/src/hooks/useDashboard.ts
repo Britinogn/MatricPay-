@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import type { ApiEnvelope } from "../types/api";
+import type { CampaignDashboard, CollectionTimeseries } from "../types";
+
 
 export function useOrganizerOverview() {
   return useQuery({
@@ -20,5 +23,33 @@ export function useCampaignDashboard(campaignId: string | undefined) {
     },
     enabled: !!campaignId,
     refetchInterval: 8000, // polling every 8s as planned
+  });
+}
+
+// claude 
+
+export function useDashboard(campaignId: string | undefined) {
+  return useQuery({
+    queryKey: ["dashboard", campaignId],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<CampaignDashboard>>(
+        `/campaigns/${campaignId}/dashboard`
+      );
+      return data.data;
+    },
+    enabled: !!campaignId,
+  });
+}
+
+export function useCollectionTimeseries(campaignId: string | undefined) {
+  return useQuery({
+    queryKey: ["dashboard", campaignId, "timeseries"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiEnvelope<CollectionTimeseries>>(
+        `/campaigns/${campaignId}/dashboard/timeseries`
+      );
+      return data.data;
+    },
+    enabled: !!campaignId,
   });
 }

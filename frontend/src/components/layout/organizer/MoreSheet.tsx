@@ -85,7 +85,7 @@ export default function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] md:hidden">
+    <div className="fixed inset-0 z-60 md:hidden">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40"

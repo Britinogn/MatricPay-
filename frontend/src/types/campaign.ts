@@ -15,6 +15,7 @@ export interface Campaign {
     expiresAt: string | null;
     createdAt: string;
     updatedAt: string;
+    isExpired: boolean;
 }
 
 export interface CreateCampaignPayload {

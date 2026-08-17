@@ -37,6 +37,27 @@ export class DashboardController {
       data,
     });
   }
+
+  async getCollectionTimeseries(request: Request, response: Response): Promise<void> {
+    const { id } = request.params;
+    const user = request.user;
+
+    if (!user) {
+      throw new HttpError(401, "Unauthorized");
+    }
+
+    if (!id || typeof id !== "string") {
+      throw new HttpError(400, "Campaign ID is required");
+    }
+
+    const data = await dashboardService.getCampaignCollectionTimeseries(user, id);
+
+    response.status(200).json({
+      success: true,
+      data,
+    });
+  }
+
 }
 
 export const dashboardController = new DashboardController();

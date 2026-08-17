@@ -16,3 +16,8 @@ dashboardRoutes.get(
   "/:id/dashboard",
   asyncHandler(dashboardController.getCampaignDashboard.bind(dashboardController))
 );
+
+dashboardRoutes.get(
+  "/:id/dashboard/timeseries",
+  asyncHandler(dashboardController.getCollectionTimeseries.bind(dashboardController))
+);

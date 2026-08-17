@@ -20,3 +20,8 @@ export interface Paginated<T> {
     pageSize: number;
     totalPages: number;
 }
+
+export interface ApiEnvelope<T> {
+    success: boolean;
+    data: T;
+}

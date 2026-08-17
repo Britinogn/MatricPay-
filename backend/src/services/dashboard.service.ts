@@ -1,4 +1,4 @@
-import { CampaignStatus, PaymentStatus, UserRole } from "@prisma/client";
+import { CampaignStatus, CampaignType, PaymentStatus, UserRole } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { HttpError } from "../utils/http-error";
 
@@ -206,6 +206,83 @@ export class DashboardService {
         createdAt: c.createdAt,
       })),
     };
+  }
+
+  /**
+   * Day-by-day cumulative "amount collected" for the Collection Progress
+   * chart, computed directly from successful payments — not estimated or
+   * interpolated. One point per UTC calendar day, from the campaign's
+   * creation date through today.
+   */
+  async getCampaignCollectionTimeseries(user: AuthUser, campaignId: string) {
+    const campaign = await prisma.campaign.findUnique({
+      where: { id: campaignId },
+      include: {
+        _count: { select: { students: true } },
+      },
+    });
+
+    if (!campaign) {
+      throw new HttpError(404, "Campaign not found");
+    }
+
+    if (user.role !== UserRole.admin && campaign.organizerId !== user.id) {
+      throw new HttpError(404, "Campaign not found");
+    }
+
+    const successfulPayments = await prisma.payment.findMany({
+      where: { campaignId, status: PaymentStatus.successful },
+      select: { amount: true, verifiedAt: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const totalStudents = campaign._count.students;
+    const campaignAmount = Number(campaign.amount);
+    const totalCollected = successfulPayments.reduce(
+      (sum, payment) => sum + Number(payment.amount),
+      0
+    );
+
+    // Same target logic as getCampaignDashboard's totalExpected, kept in
+    // sync deliberately rather than re-derived a different way.
+    const target =
+      campaign.campaignType === CampaignType.restricted
+        ? totalStudents * campaignAmount
+        : totalCollected;
+
+    const dayMs = 24 * 60 * 60 * 1000;
+    const startDay = Date.UTC(
+      campaign.createdAt.getUTCFullYear(),
+      campaign.createdAt.getUTCMonth(),
+      campaign.createdAt.getUTCDate()
+    );
+    const now = new Date();
+    const endDay = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+
+    const series: { date: string; cumulativeAmount: number }[] = [];
+    let runningTotal = 0;
+    let paymentIndex = 0;
+
+    for (let day = startDay; day <= endDay; day += dayMs) {
+      const dayEnd = day + dayMs; // exclusive upper bound for "this day"
+
+      while (
+        paymentIndex < successfulPayments.length &&
+        (successfulPayments[paymentIndex].verifiedAt ??
+          successfulPayments[paymentIndex].createdAt
+        ).getTime() < dayEnd
+      ) {
+        runningTotal += Number(successfulPayments[paymentIndex].amount);
+        paymentIndex += 1;
+      }
+
+      series.push({
+        date: new Date(day).toISOString().slice(0, 10),
+        cumulativeAmount: runningTotal,
+      });
+    }
+
+    return { series, target };
   }
 }
 
