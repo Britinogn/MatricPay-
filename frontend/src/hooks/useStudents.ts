@@ -70,22 +70,22 @@ export function useImportStudentsCsv(campaignId: string) {
   });
 }
 
-export function useValidateStudent() {
-  return useMutation({
-    mutationFn: async ({
-      slug,
-      matricNumber,
-    }: {
-      slug: string;
-      matricNumber: string;
-    }) => {
-      const { data } = await api.post(`/campaigns/slug/${slug}/students/validate`, {
-        matricNumber,
-      });
-      return data.data;
-    },
-  });
-}
+// export function useValidateStudent() {
+//   return useMutation({
+//     mutationFn: async ({
+//       slug,
+//       matricNumber,
+//     }: {
+//       slug: string;
+//       matricNumber: string;
+//     }) => {
+//       const { data } = await api.post(`/campaigns/slug/${slug}/students/validate`, {
+//         matricNumber,
+//       });
+//       return data.data;
+//     },
+//   });
+// }
 
 
 export function useDeleteStudent(campaignId: string) {

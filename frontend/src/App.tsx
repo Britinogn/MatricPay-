@@ -10,6 +10,10 @@ import OrganizerLayout from "./layouts/OrganizerLayout/OrganizerLayout";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 
+//public
+import PublicLayout from "./layouts/PublicLayout";
+import HomePage from "./pages/HomePage";
+import HowItWorksPage from "./pages/HowItWorksPage";
 
 // Organizer
 import PayoutAccountPage from "./pages/organizer/PayoutAccountPage";
@@ -36,6 +40,12 @@ function App() {
         <Toaster position="top-center" />
         
         <Routes>
+          {/* Public */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
+          </Route>
+
           {/* Public — no auth */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
