@@ -18,8 +18,9 @@ export function useCampaign(id: string | undefined) {
   return useQuery({
     queryKey: ["campaigns", id],
     queryFn: async () => {
-      const { data } = await api.get<{ data: Campaign }>(`/campaigns/${id}`);
-      return data.data;
+      const res = await api.get(`/campaigns/${id}`);
+      const payload = res.data.data ?? res.data;
+      return payload.campaign ?? payload;
     },
     enabled: !!id,
   });
@@ -63,16 +64,16 @@ export function useUpdateCampaign() {
       id: string;
       payload: Partial<CreateCampaignPayload>;
     }) => {
-      const { data } = await api.patch<{ data: Campaign }>(
-        `/campaigns/${id}`,
-        payload
-      );
-      return data.data;
+      const res = await api.patch(`/campaigns/${id}`, payload);
+      const payloadData = res.data.data ?? res.data;
+      return payloadData.campaign ?? payloadData;
     },
     onSuccess: (campaign) => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
-      queryClient.setQueryData(["campaigns", campaign.id], campaign);
+      if (campaign?.id) {
+        queryClient.setQueryData(["campaigns", campaign.id], campaign);
+      }
     },
   });
 }

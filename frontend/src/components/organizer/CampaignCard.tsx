@@ -56,11 +56,13 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
 
         <div className="flex items-center gap-1 border-l border-(--border) pl-3">
           <IconButton label="View" to={`/dashboard/campaigns/${campaign.id}`} icon={EyeIcon} />
-          <IconButton
-            label="Edit"
-            to={`/dashboard/campaigns/${campaign.id}/edit`}
-            icon={PencilEdit02Icon}
-          />
+          {campaign.status === "draft" && (
+            <IconButton
+              label="Edit"
+              to={`/dashboard/campaigns/${campaign.id}/edit`}
+              icon={PencilEdit02Icon}
+            />
+          )}
           {canClose && (
             <button
               type="button"

@@ -5,6 +5,8 @@ import {
   CampaignForm,
   type CampaignFormValues,
 } from "../../components/organizer/CampaignForm";
+import { BackLink } from "../../components/ui/BackLink";
+
 
 export default function EditCampaignPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,6 +74,7 @@ export default function EditCampaignPage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
+      <BackLink to="/dashboard/campaigns" label="Back to campaigns" />
       <div>
         <h1
           className="text-2xl font-semibold text-(--text-primary)"
