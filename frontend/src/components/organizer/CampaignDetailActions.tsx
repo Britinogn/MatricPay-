@@ -29,8 +29,8 @@ export function CampaignDetailActions({ campaign }: CampaignDetailActionsProps) 
   const updateStatus = useUpdateCampaignStatus();
   const deleteCampaign = useDeleteCampaign();
 
-  const [confirmClose, setConfirmClose] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
 
   const isDraft = campaign.status === "draft";
   const isActive = campaign.status === "active";
@@ -75,18 +75,13 @@ export function CampaignDetailActions({ campaign }: CampaignDetailActionsProps) 
     );
   };
 
-  const handleClose = () => {
-    if (!confirmClose) {
-      setConfirmClose(true);
-      return;
-    }
-
+  const handleCloseConfirm = () => {
     updateStatus.mutate(
       { id: campaign.id, status: "closed" },
       {
         onSuccess: () => {
           toast.success("Campaign closed");
-          setConfirmClose(false);
+          setShowCloseModal(false);
         },
         onError: (err: unknown) => {
           const axiosError = err as {
@@ -95,7 +90,6 @@ export function CampaignDetailActions({ campaign }: CampaignDetailActionsProps) 
           toast.error(
             axiosError.response?.data?.message || "Could not close campaign"
           );
-          setConfirmClose(false);
         },
       }
     );
@@ -168,16 +162,12 @@ export function CampaignDetailActions({ campaign }: CampaignDetailActionsProps) 
         {isActive && (
           <button
             type="button"
-            onClick={handleClose}
+            onClick={() => setShowCloseModal(true)}
             disabled={updateStatus.isPending}
-            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition disabled:opacity-60 ${
-              confirmClose
-                ? "border-red-500 bg-red-50 text-red-600"
-                : "border-(--border) text-(--text-muted) hover:border-red-400 hover:text-red-600"
-            }`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-(--border) px-3 py-2 text-sm text-(--text-muted) transition hover:border-red-400 hover:text-red-600 disabled:opacity-60"
           >
             <HugeiconsIcon icon={CancelCircleIcon} size={16} />
-            {confirmClose ? "Click again to confirm" : "Close"}
+            Close
           </button>
         )}
 
@@ -187,6 +177,18 @@ export function CampaignDetailActions({ campaign }: CampaignDetailActionsProps) 
           </span>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={showCloseModal}
+        title="Close campaign?"
+        message={`“${campaign.title}” will stop accepting payments. Students who haven’t paid will no longer be able to pay through this link. You can’t reopen it later.`}
+        confirmLabel="Close campaign"
+        cancelLabel="Cancel"
+        tone="danger"
+        isLoading={updateStatus.isPending}
+        onConfirm={handleCloseConfirm}
+        onCancel={() => setShowCloseModal(false)}
+      />
 
       <ConfirmModal
         isOpen={showDeleteModal}

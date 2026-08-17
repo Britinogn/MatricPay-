@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCampaigns } from "../../hooks/useCampaigns";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ReloadIcon } from "@hugeicons/core-free-icons";
 import {
   CampaignList,
   CampaignFilters,
@@ -9,7 +11,7 @@ import {
 import { ListSkeleton, PageHeaderSkeleton, ErrorState } from "../../components/ui";
 
 export default function CampaignListPage() {
-  const { data, isLoading, isError, refetch } = useCampaigns();
+  const { data, isLoading, isFetching, isError, refetch } = useCampaigns();
   const [statusFilter, setStatusFilter] = useState<CampaignStatusFilter>("all");
 
   const campaigns = useMemo(
@@ -64,12 +66,28 @@ export default function CampaignListPage() {
           </p>
         </div>
 
-        <Link
-          to="/dashboard/campaigns/new"
-          className="rounded-xl bg-(--primary) px-4 py-2.5 text-sm font-medium text-white transition hover:bg-(--primary-hover)"
-        >
-          + New Campaign
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            title="Reload"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-(--border) text-(--text-muted) transition hover:bg-(--surface) hover:text-(--text-primary) disabled:opacity-50"
+          >
+            <HugeiconsIcon
+              icon={ReloadIcon}
+              size={18}
+              className={isFetching ? "animate-spin" : ""}
+            />
+          </button>
+
+          <Link
+            to="/dashboard/campaigns/new"
+            className="rounded-xl bg-(--primary) px-4 py-2.5 text-sm font-medium text-white transition hover:bg-(--primary-hover)"
+          >
+            + New Campaign
+          </Link>
+        </div>
       </div>
 
       <CampaignFilters
