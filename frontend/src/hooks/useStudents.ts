@@ -1,15 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import type { CreateStudentPayload, Student } from "../types";
+import type { CreateStudentPayload, } from "../types";
+
+// export function useStudents(campaignId: string | undefined) {
+//   return useQuery({
+//     queryKey: ["campaigns", campaignId, "students"],
+//     queryFn: async () => {
+//       const { data } = await api.get<{ data: Student[] }>(
+//         `/campaigns/${campaignId}/students`
+//       );
+//       return data.data;
+//     },
+//     enabled: !!campaignId,
+//   });
+// }
 
 export function useStudents(campaignId: string | undefined) {
   return useQuery({
     queryKey: ["campaigns", campaignId, "students"],
     queryFn: async () => {
-      const { data } = await api.get<{ data: Student[] }>(
-        `/campaigns/${campaignId}/students`
-      );
-      return data.data;
+      const res = await api.get(`/campaigns/${campaignId}/students`);
+      const payload = res.data.data ?? res.data;
+      return payload.students ?? payload;
     },
     enabled: !!campaignId,
   });
@@ -20,16 +32,17 @@ export function useAddStudent(campaignId: string) {
 
   return useMutation({
     mutationFn: async (payload: CreateStudentPayload) => {
-      const { data } = await api.post<{ data: Student }>(
-        `/campaigns/${campaignId}/students`,
-        payload
-      );
-      return data.data;
+      const res = await api.post(`/campaigns/${campaignId}/students`, {
+        students: [payload],
+      });
+      const data = res.data.data ?? res.data;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["campaigns", campaignId, "students"],
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }

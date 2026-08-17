@@ -50,7 +50,7 @@ export function ActiveCampaignCard({ campaign }: ActiveCampaignCardProps) {
       {/* Perforation — the ticket-stub tear line from main.html */}
       <div className="relative mx-6 border-t-2 border-dashed border-(--border)">
         <span className="absolute -top-2.75 -left-8.75 w-5.5 h-5.5 rounded-full bg-(--background)" />
-        <span className="absolute -top-[11px] -right-[35px] w-[22px] h-[22px] rounded-full bg-(--background)" />
+        <span className="absolute -top-2.75 -right-8.75  w-5.5 h-5.5 rounded-full bg-(--background)" />
       </div>
 
       <div className="p-5">

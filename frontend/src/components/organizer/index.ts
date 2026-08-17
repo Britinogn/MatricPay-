@@ -6,3 +6,7 @@ export { RecentPaymentsList } from "./RecentPaymentsList";
 
 export { CampaignForm } from "./CampaignForm";
 export type { CampaignFormValues } from "./CampaignForm";
+
+export { CampaignDetailActions } from "./CampaignDetailActions";
+export { CampaignFilters } from "./CampaignFilters";
+export type { CampaignStatusFilter } from "./CampaignFilters";

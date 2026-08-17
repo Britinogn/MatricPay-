@@ -43,9 +43,11 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
         <p className="truncate text-sm font-medium text-(--text-primary)">
           {campaign.title}
         </p>
-        <p className="mt-0.5 text-xs text-(--text-muted)">
-          {campaign.studentCount ?? 0} students · {campaign.paymentCount ?? 0} payments
-        </p>
+        {(campaign.studentCount != null || campaign.paymentCount != null) && (
+          <p className="mt-0.5 text-xs text-(--text-muted)">
+            {campaign.studentCount ?? 0} students · {campaign.paymentCount ?? 0} payments
+          </p>
+        )}
       </div>
 
       <div className="flex shrink-0 items-center gap-3">
@@ -80,6 +82,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
           )}
         </div>
       </div>
+      
     </div>
   );
 }
