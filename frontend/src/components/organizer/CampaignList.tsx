@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CampaignCard } from "./CampaignCard";
+import { ListSkeleton, PageHeaderSkeleton } from "../../components/ui";
 
 interface Campaign {
   id: string;
@@ -16,10 +17,19 @@ interface CampaignListProps {
 }
 
 export function CampaignList({ campaigns, isLoading }: CampaignListProps) {
+  // if (isLoading) {
+  //   return (
+  //     <div className="rounded-2xl border border-(--border) bg-(--surface) px-4 py-10 text-center">
+  //       <p className="text-sm text-(--text-muted)">Loading campaigns…</p>
+  //     </div>
+  //   );
+  // }
+
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-(--border) bg-(--surface) px-4 py-10 text-center">
-        <p className="text-sm text-(--text-muted)">Loading campaigns…</p>
+      <div className="space-y-6">
+        <PageHeaderSkeleton />
+        <ListSkeleton rows={6} />
       </div>
     );
   }

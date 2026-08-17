@@ -59,9 +59,20 @@ export default function EditCampaignPage() {
           : null,
       };
 
-      await updateCampaign.mutateAsync({ id: campaign.id, payload });
+      // await updateCampaign.mutateAsync({ id: campaign.id, payload });
+      // toast.success("Campaign updated");
+      // navigate(`/dashboard/campaigns/${campaign.id}`);
+
+      const updated = await updateCampaign.mutateAsync({ id: campaign.id, payload });
+
       toast.success("Campaign updated");
-      navigate(`/dashboard/campaigns/${campaign.id}`);
+
+      if (updated?.id) {
+        navigate(`/dashboard/campaigns/${updated.id}`);
+      } else {
+        navigate(`/dashboard/campaigns/${campaign.id}`);
+      }
+
     } catch (err: unknown) {
       const axiosError = err as {
         response?: { data?: { message?: string } };

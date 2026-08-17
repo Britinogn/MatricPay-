@@ -14,28 +14,28 @@ export function useCampaigns() {
   });
 }
 
-export function useCampaign(id: string | undefined) {
-  return useQuery({
-    queryKey: ["campaigns", id],
-    queryFn: async () => {
-      const res = await api.get(`/campaigns/${id}`);
-      const payload = res.data.data ?? res.data;
-      return payload.campaign ?? payload;
-    },
-    enabled: !!id,
-  });
-}
-
 // export function useCampaign(id: string | undefined) {
 //   return useQuery({
 //     queryKey: ["campaigns", id],
 //     queryFn: async () => {
-//       const res = await api.get<{ data: Campaign }>(`/campaigns/${id}`);
-//       return res.data.data;
+//       const res = await api.get(`/campaigns/${id}`);
+//       const payload = res.data.data ?? res.data;
+//       return payload.campaign ?? payload;
 //     },
 //     enabled: !!id,
 //   });
 // }
+
+export function useCampaign(id: string | undefined) {
+  return useQuery({
+    queryKey: ["campaigns", id],
+    queryFn: async () => {
+      const res = await api.get<{ data: Campaign }>(`/campaigns/${id}`);
+      return res.data.data;
+    },
+    enabled: !!id,
+  });
+}
 
 export function useCreateCampaign() {
   const queryClient = useQueryClient();

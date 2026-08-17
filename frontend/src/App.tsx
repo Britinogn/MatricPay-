@@ -26,6 +26,9 @@ import PaymentSuccessPage from "./pages/public/PaymentSuccessPage";
 // Admin
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 
+//not found
+import NotFoundPage from "./pages/NotFoundPage";
+
 
 function App() {
   return (
@@ -57,6 +60,9 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
           </Route>
+
+          {/* inside <Routes>, as the LAST route: */}
+          <Route path="*" element={<NotFoundPage />} />
 
         </Routes>
 
