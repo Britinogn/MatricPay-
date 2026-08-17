@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useCreateCampaign } from "../../hooks/useCampaigns";
 import { CampaignForm, type CampaignFormValues } from "../../components/organizer/CampaignForm";
+import { BackLink } from "../../components/ui/BackLink";
 
 export default function CreateCampaignPage() {
   const navigate = useNavigate();
@@ -11,17 +12,24 @@ export default function CreateCampaignPage() {
     try {
       const payload = {
         title: values.title,
-        description: values.description || null,
+        description: values.description || undefined,
         amount: values.amount,
         amountType: values.amountType,
         campaignType: values.campaignType,
         currency: "NGN",
         expiresAt: values.expiresAt
           ? new Date(values.expiresAt).toISOString()
-          : null,
+          : undefined,
       };
 
       const campaign = await createCampaign.mutateAsync(payload);
+
+      if (!campaign?.id) {
+        toast.success("Campaign created");
+        navigate("/dashboard/campaigns");
+        return;
+      }
+
       toast.success("Campaign created");
       navigate(`/dashboard/campaigns/${campaign.id}`);
     } catch (err: unknown) {
@@ -36,6 +44,16 @@ export default function CreateCampaignPage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
+      <BackLink to="/dashboard/campaigns" label="Back to campaigns" />
+      {/* <div className="flex items-center gap-3">
+        <Link
+          to="/dashboard/campaigns"
+          className="text-sm text-(--text-muted) hover:text-(--text-primary)"
+        >
+          ← Back to campaigns
+        </Link>
+      </div> */}
+
       <div>
         <h1
           className="text-2xl font-semibold text-(--text-primary)"

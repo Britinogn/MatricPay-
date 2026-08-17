@@ -41,11 +41,13 @@ export function useCreateCampaign() {
 
   return useMutation({
     mutationFn: async (payload: CreateCampaignPayload) => {
-      const { data } = await api.post<{ data: Campaign }>("/campaigns", payload);
-      return data.data;
+      const res = await api.post("/campaigns", payload);
+      // support both shapes
+      return res.data.data ?? res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
     },
   });
 }

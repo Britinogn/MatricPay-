@@ -5,6 +5,7 @@ import { ActiveCampaignCard } from "../../components/organizer/ActiveCampaignCar
 import { RecentPaymentsList } from "../../components/organizer/RecentPaymentsList";
 import { CollectionChart } from "../../components/organizer/CollectionChart";
 import { formatNaira } from "../../lib/format";
+import { BackLink } from "../../components/ui/BackLink";
 
 export default function CampaignDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +33,7 @@ export default function CampaignDetailPage() {
   return (
     <div className="min-h-screen bg-(--background) p-6 md:p-10">
       <div className="max-w-6xl mx-auto space-y-6">
+        <BackLink to="/dashboard/campaigns" label="Back to campaigns" />
         <div>
           <h1 className="font-display text-2xl text-(--text-primary)">{campaign.title}</h1>
           <p className="text-(--text-muted) text-sm">/{campaign.slug}</p>
