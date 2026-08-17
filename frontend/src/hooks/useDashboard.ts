@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import type { ApiEnvelope } from "../types/api";
-import type { CampaignDashboard, CollectionTimeseries } from "../types";
+import type { CampaignDashboard, CollectionTimeseries, OrganizerOverview } from "../types";
 
 
 export function useOrganizerOverview() {
   return useQuery({
     queryKey: ["dashboard", "overview"],
     queryFn: async () => {
-      const { data } = await api.get("/organizer/overview");
-      return data.data;
+      const res = await api.get<{ data: OrganizerOverview }>("/organizer/overview");
+      return res.data.data;
     },
   });
 }

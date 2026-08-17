@@ -16,6 +16,7 @@ import PayoutAccountPage from "./pages/organizer/PayoutAccountPage";
 import CampaignListPage from "./pages/organizer/CampaignListPage";
 import CreateCampaignPage from "./pages/organizer/CreateCampaignPage";
 import CampaignDetailPage from "./pages/organizer/CampaignDetailPage";
+import OverviewPage from "./pages/organizer/OverviewPage";
 
 // Public student flow
 import PublicPaymentPage from "./pages/public/PublicPaymentPage";
@@ -41,7 +42,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={["organizer"]} />}>
             <Route path="/dashboard" element={<OrganizerLayout />}>
               <Route index element={<Navigate to="overview" replace />} />
-              <Route path="overview" element={<CampaignListPage />} />
+              <Route path="overview" element={<OverviewPage />} />
               <Route path="campaigns" element={<CampaignListPage />} />
               <Route path="campaigns/new" element={<CreateCampaignPage />} />
               <Route path="campaigns/:id" element={<CampaignDetailPage />} />

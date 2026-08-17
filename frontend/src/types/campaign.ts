@@ -28,6 +28,28 @@ export interface CreateCampaignPayload {
     expiresAt?: string | null;
 }
 
+export interface OverviewCampaign {
+  id: string;
+  title: string;
+  amount: number;
+  campaignType: string;
+  status: string;
+  slug: string;
+  studentCount: number;
+  paymentCount: number;
+  createdAt: string;
+}
+
+export interface OrganizerOverview {
+  overview: {
+    totalCampaigns: number;
+    activeCampaigns: number;
+    totalStudents: number;
+    totalCollected: number;
+  };
+  campaigns: OverviewCampaign[];
+}
+
 export interface UpdateCampaignStatusPayload {
   status: "active" | "closed"; // only forward transitions in Phase 1
 }
