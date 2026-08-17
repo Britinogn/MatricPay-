@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import type { Campaign, CreateCampaignPayload } from "../types";
+import type { CreateCampaignPayload } from "../types";
 
 export function useCampaigns() {
   return useQuery({
@@ -89,16 +89,31 @@ export function useUpdateCampaignStatus() {
       id: string;
       status: "active" | "closed";
     }) => {
-      const { data } = await api.patch<{ data: Campaign }>(
-        `/campaigns/${id}/status`,
-        { status }
-      );
-      return data.data;
+      const res = await api.patch(`/campaigns/${id}/status`, { status });
+      const payload = res.data.data ?? res.data;
+      return payload.campaign ?? payload;
     },
     onSuccess: (campaign) => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-      queryClient.setQueryData(["campaigns", campaign.id], campaign);
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
+      if (campaign?.id) {
+        queryClient.setQueryData(["campaigns", campaign.id], campaign);
+      }
+    },
+  });
+}
+
+export function useDeleteCampaign() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.delete(`/campaigns/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
     },
   });

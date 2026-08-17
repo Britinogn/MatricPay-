@@ -1,14 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   PencilEdit02Icon,
   Share08Icon,
   CheckmarkCircle02Icon,
   CancelCircleIcon,
+  Delete02Icon,
 } from "@hugeicons/core-free-icons";
 import toast from "react-hot-toast";
-import { useUpdateCampaignStatus } from "../../hooks/useCampaigns";
+import {
+  useDeleteCampaign,
+  useUpdateCampaignStatus,
+} from "../../hooks/useCampaigns";
+import { ConfirmModal } from "../ui/ConfirmModal";
 
 interface CampaignDetailActionsProps {
   campaign: {
@@ -20,8 +25,12 @@ interface CampaignDetailActionsProps {
 }
 
 export function CampaignDetailActions({ campaign }: CampaignDetailActionsProps) {
+  const navigate = useNavigate();
   const updateStatus = useUpdateCampaignStatus();
+  const deleteCampaign = useDeleteCampaign();
+
   const [confirmClose, setConfirmClose] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const isDraft = campaign.status === "draft";
   const isActive = campaign.status === "active";
@@ -52,9 +61,7 @@ export function CampaignDetailActions({ campaign }: CampaignDetailActionsProps) 
     updateStatus.mutate(
       { id: campaign.id, status: "active" },
       {
-        onSuccess: () => {
-          toast.success("Campaign activated");
-        },
+        onSuccess: () => toast.success("Campaign activated"),
         onError: (err: unknown) => {
           const axiosError = err as {
             response?: { data?: { message?: string } };
@@ -94,64 +101,104 @@ export function CampaignDetailActions({ campaign }: CampaignDetailActionsProps) 
     );
   };
 
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {/* Share */}
-      <button
-        type="button"
-        onClick={handleShare}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-(--border) px-3 py-2 text-sm text-(--text-muted) transition hover:bg-(--background) hover:text-(--text-primary)"
-      >
-        <HugeiconsIcon icon={Share08Icon} size={16} />
-        Share
-      </button>
+  const handleDeleteConfirm = () => {
+    deleteCampaign.mutate(campaign.id, {
+      onSuccess: () => {
+        toast.success("Campaign deleted");
+        setShowDeleteModal(false);
+        navigate("/dashboard/campaigns");
+      },
+      onError: (err: unknown) => {
+        const axiosError = err as {
+          response?: { data?: { message?: string } };
+        };
+        toast.error(
+          axiosError.response?.data?.message || "Failed to delete campaign"
+        );
+      },
+    });
+  };
 
-      {/* Edit — draft only */}
-      {isDraft && (
-        <Link
-          to={`/dashboard/campaigns/${campaign.id}/edit`}
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={handleShare}
           className="inline-flex items-center gap-1.5 rounded-xl border border-(--border) px-3 py-2 text-sm text-(--text-muted) transition hover:bg-(--background) hover:text-(--text-primary)"
         >
-          <HugeiconsIcon icon={PencilEdit02Icon} size={16} />
-          Edit
-        </Link>
-      )}
-
-      {/* Activate — draft only */}
-      {isDraft && (
-        <button
-          type="button"
-          onClick={handleActivate}
-          disabled={updateStatus.isPending}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-(--primary) px-3 py-2 text-sm font-medium text-white transition hover:bg-(--primary-hover) disabled:opacity-60"
-        >
-          <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} />
-          {updateStatus.isPending ? "Activating..." : "Activate"}
+          <HugeiconsIcon icon={Share08Icon} size={16} />
+          Share
         </button>
-      )}
 
-      {/* Close — active only */}
-      {isActive && (
-        <button
-          type="button"
-          onClick={handleClose}
-          disabled={updateStatus.isPending}
-          className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition disabled:opacity-60 ${
-            confirmClose
-              ? "border-red-500 bg-red-50 text-red-600"
-              : "border-(--border) text-(--text-muted) hover:border-red-400 hover:text-red-600"
-          }`}
-        >
-          <HugeiconsIcon icon={CancelCircleIcon} size={16} />
-          {confirmClose ? "Click again to confirm" : "Close"}
-        </button>
-      )}
+        {isDraft && (
+          <Link
+            to={`/dashboard/campaigns/${campaign.id}/edit`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-(--border) px-3 py-2 text-sm text-(--text-muted) transition hover:bg-(--background) hover:text-(--text-primary)"
+          >
+            <HugeiconsIcon icon={PencilEdit02Icon} size={16} />
+            Edit
+          </Link>
+        )}
 
-      {isClosed && (
-        <span className="rounded-full bg-(--border) px-3 py-1 text-xs font-medium text-(--text-muted)">
-          Closed
-        </span>
-      )}
-    </div>
+        {isDraft && (
+          <button
+            type="button"
+            onClick={handleActivate}
+            disabled={updateStatus.isPending}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-(--primary) px-3 py-2 text-sm font-medium text-white transition hover:bg-(--primary-hover) disabled:opacity-60"
+          >
+            <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} />
+            {updateStatus.isPending ? "Activating..." : "Activate"}
+          </button>
+        )}
+
+        {isDraft && (
+          <button
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            disabled={deleteCampaign.isPending}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-3 py-2 text-sm text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+          >
+            <HugeiconsIcon icon={Delete02Icon} size={16} />
+            Delete
+          </button>
+        )}
+
+        {isActive && (
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={updateStatus.isPending}
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition disabled:opacity-60 ${
+              confirmClose
+                ? "border-red-500 bg-red-50 text-red-600"
+                : "border-(--border) text-(--text-muted) hover:border-red-400 hover:text-red-600"
+            }`}
+          >
+            <HugeiconsIcon icon={CancelCircleIcon} size={16} />
+            {confirmClose ? "Click again to confirm" : "Close"}
+          </button>
+        )}
+
+        {isClosed && (
+          <span className="rounded-full bg-(--border) px-3 py-1 text-xs font-medium text-(--text-muted)">
+            Closed
+          </span>
+        )}
+      </div>
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete campaign?"
+        message={`You are about to permanently delete “${campaign.title}”. All students added to this campaign will also be removed. This cannot be undone.`}
+        confirmLabel="Delete campaign"
+        cancelLabel="Cancel"
+        tone="danger"
+        isLoading={deleteCampaign.isPending}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteModal(false)}
+      />
+    </>
   );
 }

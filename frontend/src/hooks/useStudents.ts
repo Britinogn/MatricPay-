@@ -86,3 +86,23 @@ export function useValidateStudent() {
     },
   });
 }
+
+
+export function useDeleteStudent(campaignId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (studentId: string) => {
+      const res = await api.delete(
+        `/campaigns/${campaignId}/students/${studentId}`
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["campaigns", campaignId, "students"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}

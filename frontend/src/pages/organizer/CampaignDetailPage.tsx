@@ -136,7 +136,13 @@ export default function CampaignDetailPage() {
             />
           </div>
 
-          <StudentList students={students} isLoading={studentsLoading} />
+          {/* <StudentList students={students} isLoading={studentsLoading} /> */}
+            
+          <StudentList
+            campaignId={id!}
+            students={students}
+            isLoading={studentsLoading}
+          />
         </div>
 
       </div>
