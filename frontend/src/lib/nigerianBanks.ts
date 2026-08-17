@@ -45,7 +45,7 @@ export const NIGERIAN_BANKS = [
   { name: "Guaranty Trust Bank", code: "058" },
   { name: "Heritage Bank", code: "030" },
   { name: "Keystone Bank", code: "082" },
-  { name: "Kuda Bank", code: "090267" },
+  { name: "Kuda Bank", code: "50211" },
   { name: "Opay", code: "100004" },
   { name: "PalmPay", code: "100033" },
   { name: "Polaris Bank", code: "076" },
