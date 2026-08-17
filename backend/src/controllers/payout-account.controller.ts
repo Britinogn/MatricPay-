@@ -7,6 +7,16 @@ import {
 } from "../validators/payout-account.validator";
 
 export class PayoutAccountController {
+
+    async getPayoutAccount(request: Request, response: Response): Promise<void> {
+        const result = await payoutAccountService.getPayoutAccount(request.user!.id);
+
+        response.status(200).json({
+            success: true,
+            data: result,
+        });
+    }
+
     async resolveAccount(request: Request, response: Response): Promise<void> {
         const data = ResolveAccountSchema.parse(request.body);
         const result = await payoutAccountService.resolveAccountNumber(request.user!.id, data);

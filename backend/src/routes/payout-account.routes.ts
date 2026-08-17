@@ -27,3 +27,8 @@ payoutAccountRoutes.patch(
     "/:code",
     asyncHandler(payoutAccountController.updateSubaccount.bind(payoutAccountController))
 );
+
+payoutAccountRoutes.get(
+  "/",
+  asyncHandler(payoutAccountController.getPayoutAccount.bind(payoutAccountController))
+);

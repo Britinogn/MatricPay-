@@ -10,6 +10,21 @@ import {
 } from "../validators/payout-account.validator";
 
 export class PayoutAccountService {
+
+    async getPayoutAccount(userId: string) {
+        const user = await userRepository.findById(userId);
+        if (!user) {
+            throw new HttpError(404, "User not found");
+        }
+
+        return {
+            paystackSubaccountCode: user.paystackSubaccountCode ?? null,
+            settlementBankCode: user.settlementBankCode ?? null,
+            settlementAccountNumber: user.settlementAccountNumber ?? null,
+            settlementAccountName: user.settlementAccountName ?? null,
+        };
+    }
+
     async resolveAccountNumber(userId: string, data: ResolveAccountInput) {
         // Verify user exists
         const user = await userRepository.findById(userId);
