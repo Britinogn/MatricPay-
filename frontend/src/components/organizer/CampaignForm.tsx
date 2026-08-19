@@ -7,11 +7,8 @@ const campaignSchema = z
   .object({
     title: z.string().min(3, "Title must be at least 3 characters").max(120),
     description: z.string().max(1000).optional().or(z.literal("")),
-    amount: z
-      .number({
-        // required_error: "Amount is required",
-        // invalid_type_error: "Amount must be a number",
-      })
+    netAmount: z
+      .number()
       .positive("Amount must be greater than zero"),
     amountType: z.enum(["fixed", "minimum"]),
     campaignType: z.enum(["restricted", "open"]),
@@ -56,7 +53,7 @@ export function CampaignForm({
     defaultValues: {
       title: "",
       description: "",
-      amount: undefined as unknown as number,
+      netAmount: undefined as unknown as number,
       amountType: "fixed",
       campaignType: "restricted",
       expiresAt: "",
@@ -107,21 +104,25 @@ export function CampaignForm({
         )}
       </div>
 
-      {/* Amount */}
+      {/* Net Amount (organizer receives) */}
       <div>
         <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
-          Amount (NGN)
+          Amount you want to receive (NGN)
         </label>
         <input
           type="number"
           step="100"
-          {...register("amount", { valueAsNumber: true })}
+          {...register("netAmount", { valueAsNumber: true })}
           className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm text-(--text-primary) outline-none focus:border-(--primary) focus:ring-1 focus:ring-(--primary)"
           placeholder="5000"
         />
-        {errors.amount && (
-          <p className="mt-1.5 text-xs text-red-500">{errors.amount.message}</p>
+        {errors.netAmount && (
+          <p className="mt-1.5 text-xs text-red-500">{errors.netAmount.message}</p>
         )}
+        <p className="mt-1.5 text-xs text-(--text-muted)">
+          This is the exact amount that will settle to your bank account. Students
+          will pay a slightly higher amount to cover processing fees.
+        </p>
       </div>
 
       {/* Campaign type */}

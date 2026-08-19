@@ -51,7 +51,7 @@ export default function EditCampaignPage() {
       const payload = {
         title: values.title,
         description: values.description || undefined,
-        amount: values.amount,
+        netAmount: values.netAmount,
         amountType: values.amountType,
         campaignType: values.campaignType,
         expiresAt: values.expiresAt
@@ -101,7 +101,7 @@ export default function EditCampaignPage() {
           defaultValues={{
             title: campaign.title,
             description: campaign.description ?? "",
-            amount: Number(campaign.amount),
+            netAmount: Number(campaign.amount),
             amountType: campaign.amountType as "fixed" | "minimum",
             campaignType: campaign.campaignType as "restricted" | "open",
             expiresAt: campaign.expiresAt

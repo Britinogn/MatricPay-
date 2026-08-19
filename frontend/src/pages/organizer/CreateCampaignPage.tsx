@@ -13,7 +13,7 @@ export default function CreateCampaignPage() {
       const payload = {
         title: values.title,
         description: values.description || undefined,
-        amount: values.amount,
+        netAmount: values.netAmount,
         amountType: values.amountType,
         campaignType: values.campaignType,
         currency: "NGN",
