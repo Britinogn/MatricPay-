@@ -83,7 +83,7 @@ export const CampaignListQuerySchema = z.object({
   campaignType: z.enum(["restricted", "open"]).optional(),
   search: z.string().trim().min(1).max(120).optional(),
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100).default(25),
 });
 
 export type CreateCampaignInput = z.infer<typeof CreateCampaignSchema>;
