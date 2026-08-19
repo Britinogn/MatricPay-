@@ -10,6 +10,7 @@ import type {
   UpdateCampaignInput,
   UpdateCampaignStatusInput,
 } from "../validators/campaign.validator";
+import { calculateGrossFromNet } from "../utils/pricing";
 
 type AuthUser = {
   id: string;
@@ -69,12 +70,17 @@ export class CampaignService {
     const paymentLink = `${env.CLIENT_URL}/pay/${slug}`;
     const expiresAt = toDateOrNull(data.expiresAt);
 
+    const netAmount = data.netAmount;
+    const grossAmount = calculateGrossFromNet(netAmount);
+
     const createData: Prisma.CampaignUncheckedCreateInput = {
       organizerId: user.id,
       organizationId: data.organizationId ?? null,
       title: data.title,
       description: data.description ?? null,
-      amount: data.amount,
+      // amount: data.amount,
+      amount: grossAmount,               // student-facing gross
+      netAmount,                         // organizer's target
       amountType: data.amountType,
       currency: data.currency,
       slug,
@@ -138,8 +144,13 @@ export class CampaignService {
       updateData.description = data.description;
     }
 
-    if (data.amount !== undefined) {
-      updateData.amount = data.amount;
+    // if (data.amount !== undefined) {
+    //   updateData.amount = data.amount;
+    // }
+    if (data.netAmount !== undefined) {
+      const grossAmount = calculateGrossFromNet(data.netAmount);
+      updateData.amount = grossAmount;
+      updateData.netAmount = data.netAmount;
     }
 
     if (data.amountType !== undefined) {

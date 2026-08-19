@@ -28,7 +28,11 @@ export const CreateCampaignSchema = z.object({
     .min(3, { message: "Title must be at least 3 characters" })
     .max(120, { message: "Title must not exceed 120 characters" }),
   description: optionalTextSchema,
-  amount: z.coerce
+  // amount: z.coerce
+  //   .number()
+  //   .positive({ message: "Amount must be greater than zero" })
+  //   .max(100_000_000, { message: "Amount is too large" }),
+  netAmount: z.coerce
     .number()
     .positive({ message: "Amount must be greater than zero" })
     .max(100_000_000, { message: "Amount is too large" }),
@@ -48,10 +52,15 @@ export const UpdateCampaignSchema = z
       .max(120, { message: "Title must not exceed 120 characters" })
       .optional(),
     description: optionalTextSchema,
-    amount: z.coerce
+    // amount: z.coerce
+    //   .number()
+    //   .positive({ message: "Amount must be greater than zero" })
+    //   .max(100_000_000, { message: "Amount is too large" })
+    //   .optional(),
+    netAmount: z.coerce
       .number()
-      .positive({ message: "Amount must be greater than zero" })
-      .max(100_000_000, { message: "Amount is too large" })
+      .positive()
+      .max(100_000_000)
       .optional(),
     amountType: z.enum(["fixed", "minimum"]).optional(),
     currency: currencySchema.optional(),

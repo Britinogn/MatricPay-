@@ -25,37 +25,37 @@ export class PayoutAccountService {
     //     };
     // }
 
-   async getPayoutAccount(userId: string) {
-  const user = await userRepository.findById(userId);
-  if (!user) {
-    throw new HttpError(404, "User not found");
-  }
+    async getPayoutAccount(userId: string) {
+        const user = await userRepository.findById(userId);
+        if (!user) {
+            throw new HttpError(404, "User not found");
+        }
 
-  let isVerified = false;
-  let verificationError: string | null = null;
+        let isVerified = false;
+        let verificationError: string | null = null;
 
-  if (user.paystackSubaccountCode) {
-    try {
-      const subaccount = await paystackClient.getSubaccount(user.paystackSubaccountCode);
-      isVerified = subaccount.active;
-    } catch (error) {
-      isVerified = false;
-      verificationError = error instanceof Error ? error.message : "Unable to verify subaccount status";
-      console.error(`Failed to check subaccount status for ${user.id}:`, error);
+        if (user.paystackSubaccountCode) {
+            try {
+            const subaccount = await paystackClient.getSubaccount(user.paystackSubaccountCode);
+            isVerified = subaccount.active;
+            } catch (error) {
+            isVerified = false;
+            verificationError = error instanceof Error ? error.message : "Unable to verify subaccount status";
+            console.error(`Failed to check subaccount status for ${user.id}:`, error);
+            }
+        } else {
+            isVerified = false;
+        }
+
+        return {
+            paystackSubaccountCode: user.paystackSubaccountCode ?? null,
+            settlementBankCode: user.settlementBankCode ?? null,
+            settlementAccountNumber: user.settlementAccountNumber ?? null,
+            settlementAccountName: user.settlementAccountName ?? null,
+            isVerified,
+            verificationError,
+        };
     }
-  } else {
-    isVerified = false;
-  }
-
-  return {
-    paystackSubaccountCode: user.paystackSubaccountCode ?? null,
-    settlementBankCode: user.settlementBankCode ?? null,
-    settlementAccountNumber: user.settlementAccountNumber ?? null,
-    settlementAccountName: user.settlementAccountName ?? null,
-    isVerified,
-    verificationError,
-  };
-}
 
     async resolveAccountNumber(userId: string, data: ResolveAccountInput) {
         // Verify user exists

@@ -147,6 +147,7 @@ model Campaign {
   title        String
   description  String?
   amount       Decimal        @db.Decimal(12, 2)
+  netAmount    Decimal?       @db.Decimal(12, 2) @map("net_amount")
   amountType   AmountType     @default(fixed) @map("amount_type")
   currency     String         @default("NGN")
   slug         String         @unique
