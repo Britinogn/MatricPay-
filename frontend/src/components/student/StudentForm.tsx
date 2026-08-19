@@ -15,24 +15,30 @@ export type StudentFormValues = z.infer<typeof studentSchema>;
 
 interface StudentFormProps {
   isSubmitting?: boolean;
+  initialValues?: Partial<StudentFormValues>;
+  submitLabel?: string;
   onSubmit: (values: StudentFormValues) => void;
 }
 
-export function StudentForm({ isSubmitting = false, onSubmit }: StudentFormProps) {
+export function StudentForm({
+  isSubmitting = false,
+  initialValues,
+  submitLabel = "Add student",
+  onSubmit,
+}: StudentFormProps) {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
-      fullName: "",
-      matricNumber: "",
-      email: "",
-      phone: "",
-      department: "",
-      level: "",
+      fullName: initialValues?.fullName ?? "",
+      matricNumber: initialValues?.matricNumber ?? "",
+      email: initialValues?.email ?? "",
+      phone: initialValues?.phone ?? "",
+      department: initialValues?.department ?? "",
+      level: initialValues?.level ?? "",
     },
   });
 
@@ -40,10 +46,10 @@ export function StudentForm({ isSubmitting = false, onSubmit }: StudentFormProps
     <form
       onSubmit={handleSubmit((values) => {
         onSubmit(values);
-        reset();
       })}
       className="space-y-4"
     >
+      {/* Form fields remain unchanged */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
@@ -101,7 +107,7 @@ export function StudentForm({ isSubmitting = false, onSubmit }: StudentFormProps
         disabled={isSubmitting}
         className="rounded-xl bg-(--primary) px-4 py-2.5 text-sm font-medium text-white hover:bg-(--primary-hover) disabled:opacity-60"
       >
-        {isSubmitting ? "Adding..." : "Add student"}
+        {isSubmitting ? "Saving..." : submitLabel}
       </button>
     </form>
   );

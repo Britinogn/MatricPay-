@@ -7,16 +7,14 @@ import { CollectionChart } from "../../components/organizer/CollectionChart";
 import { formatNaira } from "../../lib/format";
 import { BackLink } from "../../components/ui/BackLink";
 import { CampaignDetailActions } from "../../components/organizer";
-import { useStudents, useAddStudent, useImportStudentsCsv } from "../../hooks/useStudents";
+import { useAddStudent, useImportStudentsCsv } from "../../hooks/useStudents"; // Removed useStudents
 import { StudentList, StudentForm, StudentImportForm } from "../../components/student";
 import toast from "react-hot-toast";
 
 export default function CampaignDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: studentsData, isLoading: studentsLoading } = useStudents(id);
   const addStudent = useAddStudent(id!);
   const importCsv = useImportStudentsCsv(id!);
-  const students = Array.isArray(studentsData) ? studentsData : [];
 
   const { data, isLoading, isError } = useDashboard(id);
   const { data: timeseries, isLoading: isTimeseriesLoading } = useCollectionTimeseries(id);
@@ -95,8 +93,7 @@ export default function CampaignDetailPage() {
           </div>
         </div>
 
-        {/* students  */}
-
+        {/* Students */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-(--text-primary)">Students</h2>
 
@@ -136,15 +133,12 @@ export default function CampaignDetailPage() {
             />
           </div>
 
-          {/* <StudentList students={students} isLoading={studentsLoading} /> */}
-            
+          {/* StudentList now only needs campaignId and canManage */}
           <StudentList
             campaignId={id!}
-            students={students}
-            isLoading={studentsLoading}
+            canManage={campaign.status === 'draft'}
           />
         </div>
-
       </div>
     </div>
   );

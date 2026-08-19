@@ -9,6 +9,10 @@ export interface Payment {
     campaignId: string;
     studentId: string;
     amount: string;
+    // student: string;
+    // student?: {
+    //     fullName: string;
+    // };
     currency: string;
     provider: PaymentProvider;
     reference: string;
