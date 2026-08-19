@@ -14,6 +14,9 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import PublicLayout from "./layouts/PublicLayout";
 import HomePage from "./pages/HomePage";
 import HowItWorksPage from "./pages/HowItWorksPage";
+import FAQPage from "./pages/FAQPage";
+import SecurityPage from "./pages/SecurityPage";
+import PricingPage from "./pages/PricingPage";
 
 // Organizer
 import PayoutAccountPage from "./pages/organizer/PayoutAccountPage";
@@ -47,6 +50,9 @@ function App() {
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/security" element={<SecurityPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
           </Route>
 
           {/* Public — no auth */}

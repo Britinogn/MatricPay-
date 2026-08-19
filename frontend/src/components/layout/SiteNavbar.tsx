@@ -29,9 +29,22 @@ export function SiteNavbar() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 text-sm text-(--text-muted) md:flex">
-          <a href="#features" className="hover:text-(--text-primary)">
+          {/* <a href="#features" className="hover:text-(--text-primary)">
             Features
-          </a>
+          </a> */}
+          {/* LINK TO NEW PAGE */}
+
+          <NavLink
+            to="/pricing"
+            className={({ isActive }) =>
+              `hover:text-(--text-primary) ${
+                isActive ? "text-(--primary) font-medium" : ""
+              }`
+            }
+          >
+            Pricing
+          </NavLink>
+
           <NavLink
             to="/how-it-works"
             className={({ isActive }) =>
@@ -42,6 +55,29 @@ export function SiteNavbar() {
           >
             How it works
           </NavLink>
+
+          <NavLink
+            to="/security"
+            className={({ isActive }) =>
+              `hover:text-(--text-primary) ${
+                isActive ? "text-(--primary) font-medium" : ""
+              }`
+            }
+          >
+            Security
+          </NavLink>
+
+          <NavLink
+            to="/faq"
+            className={({ isActive }) =>
+              `hover:text-(--text-primary) ${
+                isActive ? "text-(--primary) font-medium" : ""
+              }`
+            }
+          >
+            FAQ
+          </NavLink>
+
         </nav>
 
         {/* Right actions (desktop) */}
@@ -97,13 +133,30 @@ export function SiteNavbar() {
       {mobileOpen && (
         <div className="border-t border-(--border) bg-(--surface) px-4 pb-4 pt-3 sm:hidden">
           <nav className="flex flex-col gap-1">
-            <a
+            {/* <a
               href="#features"
               onClick={() => setMobileOpen(false)}
               className="rounded-lg px-3 py-2.5 text-sm font-medium text-(--text-primary) hover:bg-(--background)"
             >
               Features
-            </a>
+            </a> */}
+
+            {/* Mobile page  */}
+
+            <NavLink
+              to="/pricing"
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `rounded-lg px-3 py-2.5 text-sm font-medium ${
+                  isActive
+                    ? "bg-(--primary) text-white"
+                    : "text-(--text-primary) hover:bg-(--background)"
+                }`
+              }
+            >
+              Pricing
+            </NavLink>
+
             <NavLink
               to="/how-it-works"
               onClick={() => setMobileOpen(false)}
@@ -117,6 +170,35 @@ export function SiteNavbar() {
             >
               How it works
             </NavLink>
+
+            <NavLink
+              to="/security"
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `rounded-lg px-3 py-2.5 text-sm font-medium ${
+                  isActive
+                    ? "bg-(--primary) text-white"
+                    : "text-(--text-primary) hover:bg-(--background)"
+                }`
+              }
+            >
+              Security
+            </NavLink>
+
+            <NavLink
+              to="/faq"
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `rounded-lg px-3 py-2.5 text-sm font-medium ${
+                  isActive
+                    ? "bg-(--primary) text-white"
+                    : "text-(--text-primary) hover:bg-(--background)"
+                }`
+              }
+            >
+              FAQ
+            </NavLink>
+
           </nav>
 
           {/* Theme options */}
