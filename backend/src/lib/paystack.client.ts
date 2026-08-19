@@ -70,6 +70,17 @@ export interface UpdateSubaccountPayload {
   business_name?: string;
 }
 
+export interface SubaccountData {
+  id: number;
+  subaccount_code: string;
+  business_name: string;
+  settlement_bank: string;
+  account_number: string;
+  percentage_charge: number;
+  active: boolean; // true when verified and ready for payouts
+  // other fields can be added as needed
+}
+
 export class PaystackClient {
   private readonly baseUrl = "https://api.paystack.co";
 
@@ -230,6 +241,29 @@ export class PaystackClient {
       );
     } catch {
       return false;
+    }
+  }
+
+  async getSubaccount(code: string): Promise<SubaccountData> {
+    try {
+      const response = await fetch(`${this.baseUrl}/subaccount/${encodeURIComponent(code)}`, {
+        method: "GET",
+        headers: this.headers,
+      });
+  
+      const body = await response.json();
+  
+      if (!response.ok || !body.status) {
+        throw new HttpError(
+          response.status >= 400 && response.status < 500 ? response.status : 502,
+          body.message || "Failed to fetch subaccount"
+        );
+      }
+  
+      return body.data as SubaccountData;
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      throw new HttpError(502, `Paystack subaccount fetch error: ${(error as Error).message}`);
     }
   }
 }
