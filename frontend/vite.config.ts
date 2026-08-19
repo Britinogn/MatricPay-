@@ -11,17 +11,24 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png"],
+
+      includeAssets: ["favicon.ico"],
+
       manifest: {
         name: "MatricPay",
         short_name: "MatricPay",
-        description: "Verified student payments for class dues and campus collections.",
+        description:
+          "Verified student payments for class dues and campus collections.",
+
         theme_color: "#1F4D3A",
         background_color: "#F7F3E8",
+
         display: "standalone",
         orientation: "portrait",
+
         start_url: "/",
         scope: "/",
+
         icons: [
           {
             src: "pwa-192x192.png",

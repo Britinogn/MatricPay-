@@ -33,6 +33,9 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 //not found
 import NotFoundPage from "./pages/NotFoundPage";
 
+//pwa - Progressive Web App
+import { InstallPrompt } from "./components/pwa/InstallPrompt";
+
 
 function App() {
   return (
@@ -75,6 +78,9 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
 
         </Routes>
+
+        {/* PWA install prompt */}
+        <InstallPrompt />
 
       </BrowserRouter>
   )
