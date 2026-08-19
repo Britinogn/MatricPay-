@@ -4,32 +4,47 @@ const faqs = [
   {
     question: "Is MatricPay free for students?",
     answer:
-      "Yes, students never pay any platform fee. They only pay the campaign amount set by the organizer. The platform fee is deducted from the organizer's settlement.",
+      "Yes. Students do not pay a MatricPay platform fee. They pay the amount set by the organizer, while applicable MatricPay and Paystack fees are deducted during settlement.",
   },
   {
     question: "How do I get paid as an organizer?",
     answer:
-      "Once you link your bank account and create a Paystack subaccount, all successful payments settle directly to your bank account. MatricPay never holds your funds.",
+      "When you create your organizer account, you provide your bank details for payouts. MatricPay creates a Paystack subaccount for you, and successful payments are automatically split between MatricPay and your payout account. Your payout account must be verified before your first payout can be processed.",
+  },
+  {
+    question: "How long does payout account verification take?",
+    answer:
+      "Your payout account requires a one-time manual verification through Paystack before the first payout can be processed. Verification may take up to 24 hours. Once verified, future payouts can be processed normally.",
   },
   {
     question: "What fees are deducted?",
     answer:
-      "MatricPay charges a 2% platform fee per successful payment. Paystack also charges its standard processing fee (1.5% + ₦100, capped at ₦2,000). Both are deducted from the organizer's share.",
+      "MatricPay charges a 2% platform fee on successful payments. Paystack also charges its applicable transaction processing fee. The exact amount you receive depends on the payment amount, payment channel, and how the transaction fees are applied.",
   },
   {
-    question: "Can I use it for any type of collection?",
+    question: "Can I use MatricPay for any type of collection?",
     answer:
-      "Yes, MatricPay works for class dues, departmental levies, events, hackathons, or any other collection. You can create a restricted campaign (with a student list) or an open campaign.",
+      "Yes. MatricPay can be used for class dues, departmental levies, events, hackathons, and other organized collections. You can create a restricted campaign with a student list or an open campaign.",
   },
   {
     question: "What happens if a student pays after the campaign closes?",
     answer:
-      "Once a campaign is closed, no new payment attempts can be initiated. However, any pending payment already in progress (e.g., a student is on the Paystack checkout page) will still be honored.",
+      "Once a campaign is closed, new payment attempts cannot be started. A payment that was already initiated before the campaign closed may still be completed depending on its payment status.",
   },
   {
     question: "How do I update my bank details?",
     answer:
-      "You can update your payout account details at any time from the payout account page. The new details will be used for future settlements.",
+      "You can update your payout account details from your payout settings. After changing your bank details, the updated payout account may require verification again before payouts can be processed to the new account.",
+  },
+  {
+    question: "Will MatricPay hold my campaign money?",
+    answer:
+      "No. MatricPay does not operate as a wallet or hold campaign funds for organizers. Payments are processed through Paystack and split according to the configured transaction split.",
+  },
+  {
+    question: "What happens to my first payout if my account is not verified?",
+    answer:
+      "The payment can still be successful and the transaction split can still be recorded, but the payout to your unverified subaccount may remain pending. Once the payout account is verified, Paystack can process the pending payout.",
   },
 ];
 
@@ -48,6 +63,7 @@ export default function FAQPage() {
       >
         Frequently asked questions
       </h1>
+
       <p className="mt-2 text-sm text-(--text-muted)">
         Quick answers to common questions about MatricPay.
       </p>
@@ -60,13 +76,20 @@ export default function FAQPage() {
           >
             <button
               onClick={() => toggle(index)}
-              className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium text-(--text-primary) hover:bg-(--background) transition"
+              className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium text-(--text-primary) transition hover:bg-(--background)"
+              aria-expanded={openIndex === index}
             >
               <span>{faq.question}</span>
-              <span className={`text-(--muted) transition-transform ${openIndex === index ? "rotate-45" : ""}`}>
+
+              <span
+                className={`text-(--text-muted) transition-transform ${
+                  openIndex === index ? "rotate-45" : ""
+                }`}
+              >
                 +
               </span>
             </button>
+
             {openIndex === index && (
               <div className="px-5 pb-4 text-sm leading-relaxed text-(--text-muted)">
                 {faq.answer}

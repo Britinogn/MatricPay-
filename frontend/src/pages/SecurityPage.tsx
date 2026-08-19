@@ -11,33 +11,33 @@ import {
 const securityFeatures = [
   {
     icon: Shield02Icon,
-    title: "PCI-DSS Compliance",
-    body: "Paystack is PCI-DSS Level 1 compliant, ensuring that card data is handled securely and never touches our servers.",
+    title: "Secure Payment Processing",
+    body: "Payments are processed through Paystack, a PCI-DSS Level 1 compliant payment provider. Sensitive card information is handled by Paystack and does not pass through MatricPay.",
   },
   {
     icon: LockIcon,
     title: "HTTPS Encryption",
-    body: "All data between your browser and our servers is encrypted using TLS, protecting sensitive information in transit.",
+    body: "Communication between your browser and MatricPay is protected using HTTPS/TLS encryption to help keep information secure while it is being transmitted.",
   },
   {
     icon: KeyIcon,
-    title: "Unguessable References",
-    body: "Payment references are generated using cryptographically secure methods (UUID v4), making them unguessable and safe for public status checks.",
+    title: "Secure Payment References",
+    body: "Payment references are generated using cryptographically secure methods, making transaction references difficult to guess and safer to use when checking payment status.",
   },
   {
     icon: File02Icon,
-    title: "Webhook Signature Verification",
-    body: "We verify every Paystack webhook using a secret key to ensure it actually came from Paystack before processing any payment update.",
+    title: "Webhook Verification",
+    body: "MatricPay verifies Paystack webhook signatures using its Paystack secret key before processing payment status updates, helping prevent unauthorized payment notifications.",
   },
   {
     icon: CloudServerIcon,
     title: "No Card Data Stored",
-    body: "We never store raw card numbers or CVV. All payment details are handled securely by Paystack's hosted checkout.",
+    body: "MatricPay does not store raw card numbers, CVV codes, or other sensitive card credentials. Payment details are handled through Paystack's secure payment infrastructure.",
   },
   {
     icon: Alert02Icon,
-    title: "Suspicious Activity Monitoring",
-    body: "Flagged payments due to amount or currency mismatches are highlighted on the organizer dashboard for manual review.",
+    title: "Payment Monitoring",
+    body: "Payment updates are validated against the expected transaction details. Suspicious or inconsistent transactions can be flagged for review before being treated as valid payments.",
   },
 ];
 
@@ -52,8 +52,10 @@ export default function SecurityPage() {
         >
           Security at MatricPay
         </h1>
-        <p className="mt-2 text-sm text-(--text-muted)">
-          We take the safety of your payments and data seriously.
+
+        <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-(--text-muted)">
+          MatricPay is designed to keep payment information, organizer data,
+          and student records protected throughout the payment process.
         </p>
       </div>
 
@@ -67,9 +69,11 @@ export default function SecurityPage() {
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-(--primary)/10 text-(--primary)">
               <HugeiconsIcon icon={item.icon} size={22} />
             </div>
+
             <h2 className="text-sm font-semibold text-(--text-primary)">
               {item.title}
             </h2>
+
             <p className="mt-2 text-sm leading-relaxed text-(--text-muted)">
               {item.body}
             </p>
@@ -77,18 +81,77 @@ export default function SecurityPage() {
         ))}
       </div>
 
+      {/* Payout security */}
+      <div className="mt-12 rounded-2xl border border-(--border) bg-(--surface) p-6">
+        <h2 className="text-lg font-semibold text-(--text-primary)">
+          Secure organizer payouts
+        </h2>
+
+        <p className="mt-2 text-sm leading-6 text-(--text-muted)">
+          Organizer payouts are handled through Paystack Subaccounts. When an
+          organizer provides a payout account, the account must be verified
+          before the first payout can be processed. This adds an additional
+          verification step before funds are released to the organizer.
+        </p>
+
+        <p className="mt-3 text-sm leading-6 text-(--text-muted)">
+          If an organizer changes their bank details, the updated payout
+          account may require verification again before payouts are processed
+          to the new account.
+        </p>
+      </div>
+
       {/* Additional details */}
-      <div className="mt-12 rounded-2xl border border-(--border) bg-(--background) p-6">
+      <div className="mt-6 rounded-2xl border border-(--border) bg-(--background) p-6">
         <h2 className="text-lg font-semibold text-(--text-primary)">
           Additional security measures
         </h2>
-        <ul className="mt-4 space-y-2 text-sm text-(--text-muted list-disc pl-5">
-          <li>Rate limiting on login and student validation endpoints to prevent brute-force attacks.</li>
-          <li>Server-side input validation and parameterized queries to prevent SQL injection.</li>
-          <li>Role-based access control ensures organizers only access their own data.</li>
-          <li>File upload validation for CSV/Excel imports, including size and type restrictions.</li>
-          <li>Audit logs for critical actions performed by organizers and admins.</li>
+
+        <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-(--text-muted)">
+          <li>
+            Rate limiting on authentication and student validation endpoints
+            helps reduce brute-force and automated abuse.
+          </li>
+
+          <li>
+            Server-side validation is applied to incoming requests before
+            sensitive operations are performed.
+          </li>
+
+          <li>
+            Role-based access control helps ensure organizers can only access
+            resources belonging to their campaigns and account.
+          </li>
+
+          <li>
+            File upload validation is applied to imported student files,
+            including supported file types and size restrictions.
+          </li>
+
+          <li>
+            Critical organizer and administrative actions can be recorded in
+            audit logs for accountability and investigation.
+          </li>
+
+          <li>
+            Payment status is confirmed server-side rather than relying solely
+            on information displayed in the student's browser.
+          </li>
         </ul>
+      </div>
+
+      {/* Closing note */}
+      <div className="mt-6 rounded-2xl border border-(--border) bg-(--background) p-6">
+        <h2 className="text-sm font-semibold text-(--text-primary)">
+          Payments are handled securely
+        </h2>
+
+        <p className="mt-2 text-sm leading-6 text-(--text-muted)">
+          MatricPay does not act as a bank or store card credentials. Payment
+          processing and organizer settlement are handled through Paystack,
+          while MatricPay focuses on campaign management, student validation,
+          payment tracking, and reconciliation.
+        </p>
       </div>
     </div>
   );
