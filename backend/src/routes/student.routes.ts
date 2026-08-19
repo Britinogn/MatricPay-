@@ -69,3 +69,14 @@ studentRoutes.delete(
   "/:id/students/:studentId",
   asyncHandler(studentController.removeStudent.bind(studentController))
 );
+
+// Update student
+studentRoutes.patch(
+  "/:id/students/:studentId",
+  asyncHandler(studentController.updateStudent.bind(studentController))
+);
+
+studentRoutes.post(
+  "/:id/students/bulk-delete",
+  asyncHandler(studentController.bulkDeleteStudents.bind(studentController))
+);

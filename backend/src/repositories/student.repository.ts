@@ -159,6 +159,33 @@ export class StudentRepository {
     });
   }
 
+  async updateById(
+    studentId: string,
+    data: {
+      fullName?: string;
+      matricNumber?: string;
+      email?: string | null;
+      phone?: string | null;
+      department?: string | null;
+      level?: string | null;
+    }
+  ) {
+    return prisma.student.update({
+      where: { id: studentId },
+      data,
+    });
+  }
+  
+  async deleteManyByIds(campaignId: string, studentIds: string[]) {
+    const result = await prisma.student.deleteMany({
+      where: {
+        campaignId,
+        id: { in: studentIds },
+      },
+    });
+    return result.count;
+  }
+
 }
 
 export const studentRepository = new StudentRepository();

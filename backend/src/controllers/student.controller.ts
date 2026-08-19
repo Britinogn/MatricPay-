@@ -9,6 +9,8 @@ import {
   CreateStudentsSchema,
   StudentListQuerySchema,
   ValidateStudentSchema,
+  UpdateStudentSchema,
+  BulkDeleteStudentsSchema,
 } from "../validators/student.validator";
 
 function requireAuthenticatedUser(request: Request) {
@@ -104,6 +106,54 @@ export class StudentController {
       success: true,
       message: "Student removed",
     });
+  }
+
+  async updateStudent(request: Request, response: Response): Promise<void> {
+    const campaignId =
+      typeof request.params.id === "string"
+        ? request.params.id
+        : request.params.id[0];
+    const studentId =
+      typeof request.params.studentId === "string"
+        ? request.params.studentId
+        : request.params.studentId[0];
+  
+    if (!campaignId || !studentId) {
+      throw new HttpError(400, "Campaign id and student id are required");
+    }
+  
+    const data = UpdateStudentSchema.parse(request.body);
+    const result = await studentService.updateStudent(
+      request.user!,
+      campaignId,
+      studentId,
+      data
+    );
+  
+    response.status(200).json({
+      success: true,
+      ...result,
+    });
+  }
+  
+  async bulkDeleteStudents(request: Request, response: Response): Promise<void> {
+    const campaignId =
+      typeof request.params.id === "string"
+        ? request.params.id
+        : request.params.id[0];
+  
+    if (!campaignId) {
+      throw new HttpError(400, "Campaign id is required");
+    }
+  
+    const data = BulkDeleteStudentsSchema.parse(request.body);
+    const result = await studentService.bulkDeleteStudents(
+      request.user!,
+      campaignId,
+      data
+    );
+  
+    response.status(200).json(result);
   }
 
 }

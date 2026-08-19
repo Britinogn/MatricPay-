@@ -52,7 +52,23 @@ export const StudentListQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 
+export const UpdateStudentSchema = StudentInputSchema.partial().refine(
+  (data) => Object.keys(data).length > 0,
+  { message: "At least one field is required" }
+);
+
+export const BulkDeleteStudentsSchema = z.object({
+  studentIds: z
+    .array(z.string().uuid({ message: "Invalid student id" }))
+    .min(1, { message: "Select at least one student" })
+    .max(500, { message: "Cannot delete more than 500 students at once" }),
+});
+
+
 export type StudentInput = z.infer<typeof StudentInputSchema>;
 export type CreateStudentsInput = z.infer<typeof CreateStudentsSchema>;
 export type ValidateStudentInput = z.infer<typeof ValidateStudentSchema>;
 export type StudentListQueryInput = z.infer<typeof StudentListQuerySchema>;
+
+export type UpdateStudentInput = z.infer<typeof UpdateStudentSchema>;
+export type BulkDeleteStudentsInput = z.infer<typeof BulkDeleteStudentsSchema>;
