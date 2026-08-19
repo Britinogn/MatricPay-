@@ -1,5 +1,5 @@
 import type { Payment, PaymentStatus } from "../../types";
-import { formatNaira } from "../../lib/format";
+import { formatCompactNaira } from "../../lib/format";
 
 interface PaymentWithStudent extends Payment {
   student?: {
@@ -43,6 +43,7 @@ export function RecentPaymentsList({ payments }: RecentPaymentsListProps) {
       <h2 className="text-lg font-semibold text-(--text-primary)">Recent Payments</h2>
 
       <div className="rounded-2xl border border-(--border) bg-(--surface) overflow-hidden">
+        {/* Desktop table */}
         <table className="w-full text-sm hidden md:table">
           <thead>
             <tr className="border-b border-(--border) text-left text-(--text-muted)">
@@ -60,7 +61,7 @@ export function RecentPaymentsList({ payments }: RecentPaymentsListProps) {
                   {payment.student?.fullName ?? "Unknown"}
                 </td>
                 <td className="px-5 py-3 font-mono text-(--text-primary)">
-                  {formatNaira(payment.amount, payment.currency)}
+                  {formatCompactNaira(payment.amount, payment.currency)}
                 </td>
                 <td className="px-5 py-3 font-mono text-(--text-muted) text-xs">{payment.reference}</td>
                 <td className="px-5 py-3 text-(--text-muted)">
@@ -79,22 +80,38 @@ export function RecentPaymentsList({ payments }: RecentPaymentsListProps) {
           </tbody>
         </table>
 
+        {/* Mobile card list */}
         <ul className="md:hidden divide-y divide-(--border)">
           {payments.map((payment) => (
-            <li key={payment.id} className="flex items-center justify-between px-5 py-3">
-              <div>
-                <p className="text-(--text-muted) text-xs">
-                  {new Date(payment.createdAt).toLocaleTimeString("en-NG", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-              <div className="text-right space-y-1">
-                <p className="font-mono text-(--text-primary) text-sm">
-                  {formatNaira(payment.amount, payment.currency)}
-                </p>
-                <StatusDot status={payment.status} />
+            <li key={payment.id} className="px-5 py-4">
+              <div className="flex items-start justify-between gap-3">
+                {/* Left: student info and reference */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-(--text-primary) truncate">
+                    {payment.student?.fullName ?? "Unknown"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-(--text-muted)">
+                    {new Date(payment.createdAt).toLocaleString("en-NG", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  <p className="mt-1 text-xs font-mono text-(--text-muted) truncate">
+                    {payment.reference}
+                  </p>
+                </div>
+
+                {/* Right: amount and status */}
+                <div className="shrink-0 text-right">
+                  <p className="font-mono text-sm font-semibold text-(--text-primary)">
+                    {formatCompactNaira(payment.amount, payment.currency)}
+                  </p>
+                  <div className="mt-1">
+                    <StatusDot status={payment.status} />
+                  </div>
+                </div>
               </div>
             </li>
           ))}

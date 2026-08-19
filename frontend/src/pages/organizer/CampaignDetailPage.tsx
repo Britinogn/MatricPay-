@@ -4,7 +4,8 @@ import { StatCard } from "../../components/ui/StatCard";
 import { ActiveCampaignCard } from "../../components/organizer/ActiveCampaignCard";
 import { RecentPaymentsList } from "../../components/organizer/RecentPaymentsList";
 import { CollectionChart } from "../../components/organizer/CollectionChart";
-import { formatNaira } from "../../lib/format";
+// import { formatNaira } from "../../lib/format";
+import { formatCompactNaira } from "../../lib/format";
 import { BackLink } from "../../components/ui/BackLink";
 import { CampaignDetailActions } from "../../components/organizer";
 import { useAddStudent, useImportStudentsCsv } from "../../hooks/useStudents"; // Removed useStudents
@@ -59,7 +60,10 @@ export default function CampaignDetailPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Collected" value={formatNaira(metrics.totalCollected, campaign.currency)} />
+          <StatCard label="Total Collected" 
+            // value={formatNaira(metrics.totalCollected, campaign.currency)} 
+            value={formatCompactNaira(metrics.totalCollected, campaign.currency)}
+          />
           <StatCard
             label="Collection Rate"
             value={`${metrics.collectionPercentage}%`}
@@ -67,7 +71,8 @@ export default function CampaignDetailPage() {
           />
           <StatCard
             label="Pending Amount"
-            value={formatNaira(metrics.outstandingBalance, campaign.currency)}
+            // value={formatNaira(metrics.outstandingBalance, campaign.currency)}
+            value={formatCompactNaira(metrics.outstandingBalance, campaign.currency)}
             subtext={`${metrics.unpaidStudents} yet to pay`}
           />
           <StatCard

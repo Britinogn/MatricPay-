@@ -21,11 +21,11 @@ export default function Topbar() {
 
   return (
     <>
+      {/* No md:ml-64 here */}
       <header className="sticky top-0 z-40 border-b border-(--border) bg-(--surface)/80 backdrop-blur-md">
         <div className="flex h-14 items-center justify-between px-4 md:px-6">
           {/* Left */}
           <div className="flex items-center gap-3">
-            {/* Mobile menu button */}
             <button
               onClick={() => setMobileOpen(true)}
               className="md:hidden flex items-center justify-center rounded-lg p-2 text-(--text-muted) hover:bg-(--background) hover:text-(--text-primary) transition"
@@ -82,7 +82,7 @@ export default function Topbar() {
               </button>
             </div>
 
-            {/* User */}
+            {/* User info */}
             <div className="hidden sm:flex flex-col items-end leading-tight">
               <span className="text-sm font-medium text-(--text-primary)">
                 {user?.fullName}
@@ -108,13 +108,11 @@ export default function Topbar() {
       {/* Mobile Sidebar Overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
 
-          {/* Drawer */}
           <div className="absolute left-0 top-0 h-full w-64 bg-(--surface) border-r border-(--border) shadow-xl">
             <div className="flex items-center justify-between p-4 border-b border-(--border)">
               <span

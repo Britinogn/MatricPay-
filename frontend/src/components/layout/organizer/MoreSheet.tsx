@@ -20,45 +20,15 @@ interface MoreSheetProps {
 }
 
 const accountItems = [
-  {
-    label: "Payouts",
-    icon: CreditCardIcon,
-    to: "/dashboard/payout-account",
-    available: true,
-  },
-  {
-    label: "Reports",
-    icon: ChartIcon,
-    to: null,
-    available: false,
-  },
-  {
-    label: "Settings",
-    icon: Settings01Icon,
-    to: null,
-    available: false,
-  },
+  { label: "Payouts", icon: CreditCardIcon, to: "/dashboard/payout-account", available: true },
+  { label: "Reports", icon: ChartIcon, to: null, available: false },
+  { label: "Settings", icon: Settings01Icon, to: null, available: false },
 ];
 
 const supportItems = [
-  {
-    label: "Help Center",
-    icon: HelpCircleIcon,
-    to: null,
-    available: false,
-  },
-  {
-    label: "Contact Support",
-    icon: Mail01Icon,
-    to: null,
-    available: false,
-  },
-  {
-    label: "About MatricPay",
-    icon: InformationCircleIcon,
-    to: null,
-    available: false,
-  },
+  { label: "Help Center", icon: HelpCircleIcon, to: null, available: false },
+  { label: "Contact Support", icon: Mail01Icon, to: null, available: false },
+  { label: "About MatricPay", icon: InformationCircleIcon, to: null, available: false },
 ];
 
 export default function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
@@ -86,9 +56,9 @@ export default function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
 
   return (
     <div className="fixed inset-0 z-60 md:hidden">
-      {/* Backdrop */}
+      {/* Backdrop with fade-in */}
       <div
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-black/40 animate-[fadeIn_0.2s_ease-out]"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -97,7 +67,9 @@ export default function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
       <div
         role="dialog"
         aria-modal="true"
-        className="absolute inset-x-0 bottom-0 max-h-[90vh] overflow-y-auto rounded-t-3xl bg-(--surface) pb-10 shadow-2xl"
+        aria-labelledby="more-sheet-title"
+        className="absolute inset-x-0 bottom-0 max-h-[90vh] overflow-y-auto rounded-t-3xl bg-(--surface) shadow-2xl"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 2.5rem)" }}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
@@ -107,6 +79,7 @@ export default function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-2 pb-4">
           <h2
+            id="more-sheet-title"
             className="text-xl font-semibold text-(--text-primary)"
             style={{ fontFamily: "var(--font-display)" }}
           >
@@ -115,13 +88,18 @@ export default function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
           <button
             onClick={onClose}
             className="rounded-full p-2 text-(--text-muted) hover:bg-(--background)"
+            aria-label="Close"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={20} />
           </button>
         </div>
 
         {/* Profile Card */}
-        <div className="mx-5 mb-6 flex items-center gap-3.5 rounded-2xl bg-(--primary) px-4 py-4 text-white">
+        <Link
+          to="/dashboard/settings" // adjust to your profile/settings route if available
+          onClick={onClose}
+          className="mx-5 mb-6 flex items-center gap-3.5 rounded-2xl bg-(--primary) px-4 py-4 text-white active:bg-(--primary-hover)"
+        >
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-lg font-semibold">
             {user?.fullName?.charAt(0)?.toUpperCase() || "U"}
           </div>
@@ -135,12 +113,8 @@ export default function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
             </p>
           </div>
 
-          <HugeiconsIcon
-            icon={ArrowRight01Icon}
-            size={18}
-            className="text-white/50"
-          />
-        </div>
+          <HugeiconsIcon icon={ArrowRight01Icon} size={18} className="text-white/50" />
+        </Link>
 
         {/* Account Section */}
         <Section title="Account">
@@ -184,13 +158,7 @@ export default function MoreSheet({ isOpen, onClose }: MoreSheetProps) {
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="px-5 mb-5">
       <p className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-(--text-muted)">
@@ -212,14 +180,7 @@ interface MoreRowProps {
   onNavigate: () => void;
 }
 
-function MoreRow({
-  label,
-  icon,
-  to,
-  available,
-  isLast,
-  onNavigate,
-}: MoreRowProps) {
+function MoreRow({ label, icon, to, available, isLast, onNavigate }: MoreRowProps) {
   const row = (
     <div
       className={`flex items-center gap-3.5 px-4 py-3.5 ${
@@ -233,11 +194,7 @@ function MoreRow({
       <span className="flex-1 text-[15px] font-medium">{label}</span>
 
       {available ? (
-        <HugeiconsIcon
-          icon={ArrowRight01Icon}
-          size={16}
-          className="text-(--text-muted)"
-        />
+        <HugeiconsIcon icon={ArrowRight01Icon} size={16} className="text-(--text-muted)" />
       ) : (
         <span className="rounded-full bg-(--surface) px-2.5 py-0.5 text-[10px] font-medium text-(--text-muted)">
           Soon

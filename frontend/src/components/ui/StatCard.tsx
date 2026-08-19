@@ -15,7 +15,7 @@ export function StatCard({ label, value, icon, trend, subtext }: StatCardProps) 
         <span className="text-sm font-medium text-(--text-muted)">{label}</span>
         {icon && <span className="text-(--primary)">{icon}</span>}
       </div>
-      <div className="font-display text-2xl text-(--text-primary)">{value}</div>
+      <div className="font-numeric text-2xl text-(--text-primary)">{value}</div>
       {trend && (
         <p className="text-xs mt-1 font-medium" style={{ color: trend.positive ? "var(--primary)" : "#B3492F" }}>
           {trend.positive ? "↑" : "↓"} {trend.value}

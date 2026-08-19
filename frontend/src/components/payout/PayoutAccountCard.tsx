@@ -1,7 +1,8 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { BankIcon } from "@hugeicons/core-free-icons";
+import { BankIcon, Copy01Icon } from "@hugeicons/core-free-icons";
 import type { PayoutAccount } from "../../types";
 import { NIGERIAN_BANKS } from "../../lib/nigerianBanks";
+import toast from "react-hot-toast";
 
 interface PayoutAccountCardProps {
   account: PayoutAccount;
@@ -14,10 +15,19 @@ export function PayoutAccountCard({ account, onEdit }: PayoutAccountCardProps) {
     account.settlementBankCode ||
     "—";
 
+  const handleCopyAccountNumber = async () => {
+    if (!account.settlementAccountNumber) {
+      toast.error("No account number available");
+      return;
+    }
+    await navigator.clipboard.writeText(account.settlementAccountNumber);
+    toast.success("Account number copied");
+  };
+
   return (
     <div className="rounded-2xl border border-(--border) bg-(--surface) p-5">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-(--primary)/10 text-(--primary)">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--primary)/10 text-(--primary)">
           <HugeiconsIcon icon={BankIcon} size={20} />
         </div>
 
@@ -26,12 +36,27 @@ export function PayoutAccountCard({ account, onEdit }: PayoutAccountCardProps) {
             {account.settlementAccountName || "Payout account"}
           </p>
           <p className="mt-1 text-sm text-(--text-muted)">{bankName}</p>
-          <p className="mt-0.5 font-mono text-sm text-(--text-primary)">
-            {account.settlementAccountNumber || "—"}
-          </p>
+
+          <div className="mt-1 flex items-center gap-2">
+            <p className="font-numeric text-sm text-(--text-primary)">
+              {account.settlementAccountNumber || "—"}
+            </p>
+            {account.settlementAccountNumber && (
+              <button
+                type="button"
+                onClick={handleCopyAccountNumber}
+                className="rounded-md p-1 text-(--text-muted) hover:bg-(--background) hover:text-(--text-primary)"
+                title="Copy account number"
+              >
+                <HugeiconsIcon icon={Copy01Icon} size={14} />
+              </button>
+            )}
+          </div>
+
           {account.paystackSubaccountCode && (
             <p className="mt-2 text-xs text-(--text-muted)">
-              Subaccount: {account.paystackSubaccountCode}
+              Subaccount:{" "}
+              <span className="font-numeric">{account.paystackSubaccountCode}</span>
             </p>
           )}
         </div>

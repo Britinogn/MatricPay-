@@ -37,7 +37,10 @@ export default function MobileLayout() {
   return (
     <div className="min-h-screen bg-(--background) text-(--text-primary)">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-40 border-b border-(--border) bg-(--surface)">
+      <header
+        className="sticky top-0 z-40 border-b border-(--border) bg-(--surface)"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="flex h-14 items-center justify-between px-4">
           <Link to="/dashboard/overview">
             <span
@@ -48,25 +51,33 @@ export default function MobileLayout() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-3">
-            <button className="relative rounded-full p-1.5 text-(--text-muted)">
+          <div className="flex items-center gap-1 sm:gap-3">
+            {/* Notification button with badge placeholder */}
+            <button
+              className="relative rounded-full p-2 text-(--text-muted) hover:bg-(--background) hover:text-(--text-primary) transition"
+              aria-label="Notifications"
+            >
               <HugeiconsIcon icon={Notification03Icon} size={20} />
+              {/* Static badge for demo; replace with real count */}
+              {/* <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
+                3
+              </span> */}
             </button>
 
             {/* Avatar + Dropdown */}
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen((prev) => !prev)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-(--primary) text-sm font-medium text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-(--primary) text-sm font-medium text-white shadow-sm"
               >
                 {user?.fullName?.charAt(0)?.toUpperCase() || "U"}
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-(--border) bg-(--surface) shadow-xl z-50">
+                <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-(--border) bg-(--surface) shadow-xl z-50">
                   {/* User info */}
                   <div className="border-b border-(--border) px-4 py-3">
-                    <p className="text-sm font-medium text-(--text-primary)">
+                    <p className="truncate text-sm font-medium text-(--text-primary)">
                       {user?.fullName}
                     </p>
                     <p className="text-xs capitalize text-(--text-muted)">
@@ -75,17 +86,17 @@ export default function MobileLayout() {
                   </div>
 
                   {/* Theme */}
-                  <div className="px-3 py-2">
-                    <p className="mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wide text-(--text-muted)">
+                  <div className="px-3 py-3">
+                    <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-(--text-muted)">
                       Theme
                     </p>
                     <div className="flex gap-1 rounded-xl bg-(--background) p-1">
                       <button
                         onClick={() => setTheme("light")}
-                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition ${
+                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition ${
                           theme === "light"
                             ? "bg-(--primary) text-white"
-                            : "text-(--text-muted)"
+                            : "text-(--text-muted) hover:text-(--text-primary)"
                         }`}
                       >
                         <HugeiconsIcon icon={Sun03Icon} size={14} />
@@ -93,10 +104,10 @@ export default function MobileLayout() {
                       </button>
                       <button
                         onClick={() => setTheme("dark")}
-                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition ${
+                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition ${
                           theme === "dark"
                             ? "bg-(--primary) text-white"
-                            : "text-(--text-muted)"
+                            : "text-(--text-muted) hover:text-(--text-primary)"
                         }`}
                       >
                         <HugeiconsIcon icon={Moon02Icon} size={14} />
@@ -104,10 +115,10 @@ export default function MobileLayout() {
                       </button>
                       <button
                         onClick={() => setTheme("system")}
-                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition ${
+                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition ${
                           theme === "system"
                             ? "bg-(--primary) text-white"
-                            : "text-(--text-muted)"
+                            : "text-(--text-muted) hover:text-(--text-primary)"
                         }`}
                       >
                         <HugeiconsIcon icon={ComputerIcon} size={14} />
@@ -117,13 +128,14 @@ export default function MobileLayout() {
                   </div>
 
                   {/* Settings */}
-                  <button
+                  <Link
+                    to="/dashboard/settings"
                     onClick={() => setMenuOpen(false)}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-(--text-primary) hover:bg-(--background)"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-sm text-(--text-primary) hover:bg-(--background) transition"
                   >
                     <HugeiconsIcon icon={Settings01Icon} size={16} />
                     Settings
-                  </button>
+                  </Link>
 
                   {/* Logout */}
                   <button
@@ -131,7 +143,7 @@ export default function MobileLayout() {
                       setMenuOpen(false);
                       logout();
                     }}
-                    className="flex w-full items-center gap-3 border-t border-(--border) px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                    className="flex w-full items-center gap-3 border-t border-(--border) px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition"
                   >
                     <HugeiconsIcon icon={Logout01Icon} size={16} />
                     Log out
@@ -144,7 +156,7 @@ export default function MobileLayout() {
       </header>
 
       {/* Content */}
-      <main className="px-4 py-4 pb-24">
+      <main className="px-4 py-4 pb-28">
         <Outlet />
       </main>
 

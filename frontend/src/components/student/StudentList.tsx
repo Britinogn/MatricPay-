@@ -119,6 +119,20 @@ export function StudentList({
         )}
       </div>
 
+      {/* Bulk delete bar - sticky above bottom tab on mobile */}
+      {selected.size > 0 && (
+        <div className="sticky bottom-20 z-30 flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 shadow-lg sm:static sm:bottom-0 sm:shadow-none">
+          <p className="text-sm text-red-700">{selected.size} selected</p>
+          <button
+            type="button"
+            onClick={() => setShowBulkDelete(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Delete selected
+          </button>
+        </div>
+      )}
+
       {/* List */}
       <div className="overflow-hidden rounded-2xl border border-(--border) bg-(--surface)">
         {isLoading ? (
@@ -148,7 +162,7 @@ export function StudentList({
                   type="checkbox"
                   checked={allOnPageSelected}
                   onChange={toggleAllOnPage}
-                  className="h-4 w-4 accent-(--primary)"
+                  className="h-5 w-5 accent-(--primary)"
                 />
                 <span className="text-xs text-(--text-muted)">
                   Select page · {total} total
@@ -160,44 +174,46 @@ export function StudentList({
               {students.map((student) => (
                 <div
                   key={student.id}
-                  className="flex items-center gap-3 px-4 py-3"
+                  className="px-4 py-4 sm:px-5 transition hover:bg-(--background)"
                 >
-                  {canManage && (
-                    <input
-                      type="checkbox"
-                      checked={selected.has(student.id)}
-                      onChange={() => toggleOne(student.id)}
-                      className="h-4 w-4 shrink-0 accent-(--primary)"
-                    />
-                  )}
+                  <div className="flex items-start gap-3 sm:items-center">
+                    {canManage && (
+                      <input
+                        type="checkbox"
+                        checked={selected.has(student.id)}
+                        onChange={() => toggleOne(student.id)}
+                        className="mt-1 h-5 w-5 shrink-0 accent-(--primary) sm:mt-0"
+                      />
+                    )}
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-(--text-primary)">
-                      {student.fullName}
-                    </p>
-                    <p className="text-xs text-(--text-muted)">
-                      {student.matricNumber}
-                      {student.department ? ` · ${student.department}` : ""}
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-(--text-primary)">
+                        {student.fullName}
+                      </p>
+                      <p className="mt-0.5 text-xs text-(--text-muted)">
+                        {student.matricNumber}
+                        {student.department ? ` · ${student.department}` : ""}
+                      </p>
+                    </div>
                   </div>
 
                   {canManage && (
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-(--border) pt-3 sm:mt-0 sm:border-0 sm:pt-0 sm:pl-3">
                       <button
                         type="button"
                         title="Edit"
                         onClick={() => setStudentToEdit(student)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-(--text-muted) hover:bg-(--background) hover:text-(--text-primary)"
+                        className="flex h-11 w-11 items-center justify-center rounded-xl text-(--text-muted) transition hover:bg-(--background) hover:text-(--text-primary)"
                       >
-                        <HugeiconsIcon icon={PencilEdit02Icon} size={16} />
+                        <HugeiconsIcon icon={PencilEdit02Icon} size={18} />
                       </button>
                       <button
                         type="button"
                         title="Delete"
                         onClick={() => setStudentToDelete(student)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-(--text-muted) hover:bg-red-50 hover:text-red-600"
+                        className="flex h-11 w-11 items-center justify-center rounded-xl text-(--text-muted) transition hover:bg-red-50 hover:text-red-600"
                       >
-                        <HugeiconsIcon icon={Delete02Icon} size={16} />
+                        <HugeiconsIcon icon={Delete02Icon} size={18} />
                       </button>
                     </div>
                   )}
@@ -219,7 +235,7 @@ export function StudentList({
               type="button"
               disabled={page <= 1}
               onClick={() => goToPage(Math.max(1, page - 1))}
-              className="rounded-xl border border-(--border) px-3 py-1.5 text-(--text-primary) disabled:opacity-40"
+              className="rounded-xl border border-(--border) px-4 py-2 text-(--text-primary) disabled:opacity-40"
             >
               Previous
             </button>
@@ -227,7 +243,7 @@ export function StudentList({
               type="button"
               disabled={page >= totalPages}
               onClick={() => goToPage(page + 1)}
-              className="rounded-xl border border-(--border) px-3 py-1.5 text-(--text-primary) disabled:opacity-40"
+              className="rounded-xl border border-(--border) px-4 py-2 text-(--text-primary) disabled:opacity-40"
             >
               Next
             </button>

@@ -6,6 +6,7 @@ import {
   ErrorState,
 } from "../../components/ui";
 
+
 export default function PayoutAccountPage() {
   const { data, isLoading, isError, refetch } = usePayoutAccount();
   const [isEditing, setIsEditing] = useState(false);

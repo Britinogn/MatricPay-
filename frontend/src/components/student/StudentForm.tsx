@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,6 +30,7 @@ export function StudentForm({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
@@ -42,6 +44,18 @@ export function StudentForm({
     },
   });
 
+  // Update form when initialValues change (e.g., editing a different student)
+  useEffect(() => {
+    reset({
+      fullName: initialValues?.fullName ?? "",
+      matricNumber: initialValues?.matricNumber ?? "",
+      email: initialValues?.email ?? "",
+      phone: initialValues?.phone ?? "",
+      department: initialValues?.department ?? "",
+      level: initialValues?.level ?? "",
+    });
+  }, [initialValues, reset]);
+
   return (
     <form
       onSubmit={handleSubmit((values) => {
@@ -49,7 +63,6 @@ export function StudentForm({
       })}
       className="space-y-4"
     >
-      {/* Form fields remain unchanged */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
@@ -89,8 +102,30 @@ export function StudentForm({
             type="email"
             {...register("email")}
             className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+            placeholder="jane@example.com"
           />
+          {errors.email && (
+            <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+          )}
         </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
+            Phone <span className="text-(--text-muted)">(optional)</span>
+          </label>
+          <input
+            type="tel"
+            {...register("phone")}
+            className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+            placeholder="+2348012345678"
+          />
+          {errors.phone && (
+            <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
             Department <span className="text-(--text-muted)">(optional)</span>
@@ -98,14 +133,32 @@ export function StudentForm({
           <input
             {...register("department")}
             className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+            placeholder="Computer Science"
           />
+          {errors.department && (
+            <p className="mt-1 text-xs text-red-500">{errors.department.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
+            Level <span className="text-(--text-muted)">(optional)</span>
+          </label>
+          <input
+            {...register("level")}
+            className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+            placeholder="300L"
+          />
+          {errors.level && (
+            <p className="mt-1 text-xs text-red-500">{errors.level.message}</p>
+          )}
         </div>
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="rounded-xl bg-(--primary) px-4 py-2.5 text-sm font-medium text-white hover:bg-(--primary-hover) disabled:opacity-60"
+        className="w-full sm:w-auto rounded-xl bg-(--primary) px-4 py-2.5 text-sm font-medium text-white hover:bg-(--primary-hover) disabled:opacity-60"
       >
         {isSubmitting ? "Saving..." : submitLabel}
       </button>

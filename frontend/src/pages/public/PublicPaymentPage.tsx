@@ -13,37 +13,46 @@ export default function PublicPaymentPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-(--background)">
-        <p className="text-sm text-(--text-muted)">Loading campaign…</p>
+      <div className="min-h-screen bg-(--background) flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-4">
+          <div className="flex justify-center">
+            <BrandLogo />
+          </div>
+          <div className="rounded-2xl border border-(--border) bg-(--surface) p-5 space-y-4">
+            <div className="h-4 w-3/4 rounded bg-(--border) animate-pulse" />
+            <div className="h-4 w-1/2 rounded bg-(--border) animate-pulse" />
+            <div className="h-10 rounded-xl bg-(--border) animate-pulse" />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (isError || !campaign) {
     return (
-      <div className="min-h-screen bg-(--background)">
-        <ErrorState
-          title="Campaign not found"
-          message="This payment link is invalid or the campaign no longer exists."
-          onRetry={() => refetch()}
-        />
+      <div className="min-h-screen bg-(--background) flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="mb-6 flex justify-center">
+            <BrandLogo />
+          </div>
+          <ErrorState
+            title="Campaign not found"
+            message="This payment link is invalid or the campaign no longer exists."
+            onRetry={() => refetch()}
+          />
+        </div>
       </div>
     );
   }
 
-  const canPay =
-    campaign.status === "active" && !campaign.isExpired;
+  const canPay = campaign.status === "active" && !campaign.isExpired;
 
   return (
-    <div className="min-h-screen bg-(--background) px-4 py-8 text-(--text-primary)">
-      <div className="mx-auto max-w-md space-y-6">
-        <div className="text-center">
-          <p
-            className="text-lg font-semibold"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Matric<span className="text-(--primary)">Pay</span>
-          </p>
+    <div className="min-h-screen bg-(--background) px-4 py-6 text-(--text-primary) flex flex-col">
+      <div className="mx-auto w-full max-w-md flex-1 space-y-6">
+        {/* Brand */}
+        <div className="flex justify-center">
+          <BrandLogo />
         </div>
 
         <CampaignHeader campaign={campaign} />
@@ -58,6 +67,22 @@ export default function PublicPaymentPage() {
           <OpenPaymentForm campaign={campaign} />
         )}
       </div>
+
+      {/* Trust footer */}
+      <p className="mt-8 text-center text-xs text-(--text-muted)">
+        Secured by <span className="font-medium text-(--text-primary)">Paystack</span>
+      </p>
     </div>
+  );
+}
+
+function BrandLogo() {
+  return (
+    <span
+      className="text-lg font-semibold text-(--text-primary)"
+      style={{ fontFamily: "var(--font-display)" }}
+    >
+      Matric<span className="text-(--primary)">Pay</span>
+    </span>
   );
 }
