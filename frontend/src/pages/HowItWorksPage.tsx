@@ -61,7 +61,7 @@ function FlowImage({ src, alt }: FlowImageProps) {
 function StepFlow({ steps }: { steps: { icon: typeof Link04Icon; text: string }[] }) {
   return (
     <ol className="relative mt-5 space-y-5">
-      <div aria-hidden className="absolute left-[19px] top-4 bottom-4 w-px border-l-2 border-dashed border-(--border)" />
+      <div aria-hidden className="absolute left-4.75 top-4 bottom-4 w-px border-l-2 border-dashed border-(--border)" />
       {steps.map((step, index) => (
         <li key={step.text} className="relative flex items-start gap-4">
           <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-(--border) bg-(--background) text-(--primary)">

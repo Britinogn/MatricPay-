@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { usePayoutAccount } from "../../hooks/usePayoutAccount";
-import { PayoutAccountCard, PayoutAccountForm } from "../../components/payout";
+import {
+  PayoutAccountCard,
+  PayoutAccountForm,
+  PayoutVerificationBanner,
+} from "../../components/payout";
 import {
   PageHeaderSkeleton,
   ErrorState,
 } from "../../components/ui";
-
 
 export default function PayoutAccountPage() {
   const { data, isLoading, isError, refetch } = usePayoutAccount();
@@ -44,6 +47,14 @@ export default function PayoutAccountPage() {
           Set up the bank account where campaign payments will be settled.
         </p>
       </div>
+
+      {/* Verification status banner (only when subaccount exists) */}
+      {hasAccount && (
+        <PayoutVerificationBanner
+          isVerified={Boolean(data?.isVerified)}
+          verificationError={data?.verificationError}
+        />
+      )}
 
       {hasAccount && !isEditing ? (
         <PayoutAccountCard

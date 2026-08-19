@@ -152,7 +152,7 @@ export default function PricingPage() {
         </p>
 
         <div className="mt-6 overflow-x-auto">
-          <table className="w-full min-w-[620px] text-sm">
+          <table className="w-full min-w-155 text-sm">
             <thead>
               <tr className="border-b border-(--border) text-left text-(--text-muted)">
                 <th className="py-3 pr-4 font-medium">Student Pays</th>

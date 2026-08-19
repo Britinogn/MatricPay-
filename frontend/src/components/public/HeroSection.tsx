@@ -12,7 +12,7 @@ function HeroImage() {
 
   if (failed) {
     return (
-      <div className="flex aspect-[4/3] w-full items-center justify-center rounded-3xl border border-dashed border-(--border) bg-(--surface) p-6 text-center">
+      <div className="flex aspect-4/3 w-full items-center justify-center rounded-3xl border border-dashed border-(--border) bg-(--surface) p-6 text-center">
         <p className="text-xs text-(--text-muted)">
           Add <code className="font-mono text-(--primary)">/images/heropay.png</code> to show this image
         </p>
@@ -26,9 +26,9 @@ function HeroImage() {
         src="/images/heropay.png"
         alt="Student payment flow"
         onError={() => setFailed(true)}
-        className="w-full aspect-[4/3] object-cover"
+        className="w-full aspect-4/3 object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60" />
+      <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-60" />
     </div>
   );
 }

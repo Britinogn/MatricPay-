@@ -3,6 +3,8 @@ export interface PayoutAccount {
     settlementBankCode: string | null;
     settlementAccountNumber: string | null;
     settlementAccountName: string | null;
+    isVerified: boolean;
+    verificationError: string | null;
 }
 
 export interface CreatePayoutAccountPayload {
