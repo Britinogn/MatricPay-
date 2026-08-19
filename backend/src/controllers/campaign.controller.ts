@@ -8,6 +8,7 @@ import {
   CreateCampaignSchema,
   UpdateCampaignSchema,
   UpdateCampaignStatusSchema,
+  BulkDeleteCampaignsSchema,
 } from "../validators/campaign.validator";
 
 function requireAuthenticatedUser(request: Request) {
@@ -85,6 +86,15 @@ export class CampaignController {
       message: "Campaign deleted",
     });
   }
+
+  async bulkDelete(request: Request, response: Response): Promise<void> {
+    const user = requireAuthenticatedUser(request);
+    const { campaignIds } = BulkDeleteCampaignsSchema.parse(request.body);
+    const result = await campaignService.bulkDeleteCampaigns(user, campaignIds);
+
+    response.status(200).json(result);
+  }
+
 }
 
 export const campaignController = new CampaignController();

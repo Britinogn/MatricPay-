@@ -25,3 +25,8 @@ campaignRoutes.delete(
   "/:id",
   asyncHandler(campaignController.remove.bind(campaignController))
 );
+
+campaignRoutes.post(
+  "/bulk-delete",
+  asyncHandler(campaignController.bulkDelete.bind(campaignController))
+);

@@ -86,9 +86,17 @@ export const CampaignListQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(25),
 });
 
+export const BulkDeleteCampaignsSchema = z.object({
+  campaignIds: z
+    .array(uuidSchema)
+    .min(1, { message: "At least one campaign ID is required" }),
+});
+
+
 export type CreateCampaignInput = z.infer<typeof CreateCampaignSchema>;
 export type UpdateCampaignInput = z.infer<typeof UpdateCampaignSchema>;
 export type CampaignIdParamInput = z.infer<typeof CampaignIdParamSchema>;
 export type CampaignSlugParamInput = z.infer<typeof CampaignSlugParamSchema>;
 export type UpdateCampaignStatusInput = z.infer<typeof UpdateCampaignStatusSchema>;
 export type CampaignListQueryInput = z.infer<typeof CampaignListQuerySchema>;
+export type BulkDeleteCampaignsInput = z.infer<typeof BulkDeleteCampaignsSchema>;

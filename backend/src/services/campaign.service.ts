@@ -268,16 +268,16 @@ export class CampaignService {
   }
 
   async deleteCampaign(user: AuthUser, campaignId: string) {
-  const campaign = await this.getOwnedCampaign(user, campaignId);
+    const campaign = await this.getOwnedCampaign(user, campaignId);
 
-  if (campaign.status !== CampaignStatus.draft) {
-    throw new HttpError(
-      400,
-      "Only draft campaigns can be deleted. Close active campaigns instead."
-    );
-  }
+    if (campaign.status !== CampaignStatus.draft) {
+      throw new HttpError(
+        400,
+        "Only draft campaigns can be deleted. Close active campaigns instead."
+      );
+    }
 
-  const paymentCount = await campaignRepository.countPayments(campaign.id);
+    const paymentCount = await campaignRepository.countPayments(campaign.id);
 
     if (paymentCount > 0) {
       throw new HttpError(
@@ -292,6 +292,41 @@ export class CampaignService {
 
     return { success: true };
   }
+
+  async bulkDeleteCampaigns(user: AuthUser, campaignIds: string[]) {
+    const campaigns = [];
+  
+    for (const id of campaignIds) {
+      const campaign = await this.getOwnedCampaign(user, id);
+  
+      if (!campaign) {
+        throw new HttpError(404, "Campaign not found");
+      }
+  
+      if (campaign.status !== CampaignStatus.draft) {
+        throw new HttpError(400, "Only draft campaigns can be deleted");
+      }
+  
+      const paymentCount = await campaignRepository.countPayments(campaign.id);
+      if (paymentCount > 0) {
+        throw new HttpError(
+          400,
+          "Cannot delete a campaign that already has payments"
+        );
+      }
+  
+      campaigns.push(campaign);
+    }
+  
+    // Perform bulk deletion in a single transaction
+    await campaignRepository.bulkDelete(campaigns.map((c) => c.id));
+  
+    return {
+      success: true,
+      deletedCount: campaigns.length,
+    };
+  }
+
 }
 
 export const campaignService = new CampaignService();
