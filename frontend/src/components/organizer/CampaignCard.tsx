@@ -8,9 +8,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import toast from "react-hot-toast";
 import { formatNaira } from "../../lib/format";
-import {
-  useDeleteCampaign,
-} from "../../hooks/useCampaigns";
+import { useDeleteCampaign } from "../../hooks/useCampaigns";
 import { ConfirmModal } from "../ui/ConfirmModal";
 
 interface CampaignCardProps {
@@ -21,66 +19,93 @@ interface CampaignCardProps {
     status: string;
     studentCount?: number;
     paymentCount?: number;
+    campaignType?: string;
   };
+  selected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
-export function CampaignCard({ campaign }: CampaignCardProps) {
+export function CampaignCard({
+  campaign,
+  selected = false,
+  onToggleSelect,
+}: CampaignCardProps) {
   const deleteCampaign = useDeleteCampaign();
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const isDraft = campaign.status === "draft";
-  
+  const isSelectable = Boolean(onToggleSelect) && isDraft;
+
   return (
     <>
-      <div className="flex items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-(--background)">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-(--text-primary)">
-            {campaign.title}
-          </p>
-          {(campaign.studentCount != null || campaign.paymentCount != null) && (
-            <p className="mt-0.5 text-xs text-(--text-muted)">
-              {campaign.studentCount ?? 0} students ·{" "}
-              {campaign.paymentCount ?? 0} payments
-            </p>
+      <div className="px-4 py-4 sm:px-5 transition hover:bg-(--background)">
+        <div className="flex items-start gap-3 sm:items-center">
+          {isSelectable && (
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => onToggleSelect?.(campaign.id)}
+              className="mt-1 h-5 w-5 shrink-0 accent-(--primary) sm:mt-0"
+              aria-label={`Select ${campaign.title}`}
+            />
           )}
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2 sm:items-center">
+              <p className="truncate text-sm font-medium text-(--text-primary) sm:text-base">
+                {campaign.title}
+              </p>
+
+              <div className="hidden sm:flex sm:items-center sm:gap-3 sm:shrink-0">
+                <span className="text-sm font-medium text-(--text-primary)">
+                  {formatNaira(Number(campaign.amount) || 0)}
+                </span>
+                <StatusBadge status={campaign.status} />
+              </div>
+            </div>
+
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <p className="text-xs text-(--text-muted)">
+                {campaign.studentCount ?? 0} students ·{" "}
+                {campaign.paymentCount ?? 0} payments
+                {campaign.campaignType ? ` · ${campaign.campaignType}` : ""}
+              </p>
+
+              <div className="flex items-center gap-2 sm:hidden">
+                <span className="text-sm font-semibold text-(--text-primary)">
+                  {formatNaira(Number(campaign.amount) || 0)}
+                </span>
+                <StatusBadge status={campaign.status} />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="text-sm font-medium text-(--text-primary)">
-            {formatNaira(Number(campaign.amount) || 0)}
-          </span>
-          <StatusBadge status={campaign.status} />
+        <div className="mt-3 flex items-center justify-end gap-2 border-t border-(--border) pt-3 sm:mt-0 sm:border-0 sm:pt-0 sm:pl-3">
+          <IconButton
+            label="View"
+            to={`/dashboard/campaigns/${campaign.id}`}
+            icon={EyeIcon}
+          />
 
-          <div className="ml-1 flex items-center gap-1 border-l border-(--border) pl-2">
+          {isDraft && (
             <IconButton
-              label="View"
-              to={`/dashboard/campaigns/${campaign.id}`}
-              icon={EyeIcon}
+              label="Edit"
+              to={`/dashboard/campaigns/${campaign.id}/edit`}
+              icon={PencilEdit02Icon}
             />
+          )}
 
-            {isDraft && (
-              <IconButton
-                label="Edit"
-                to={`/dashboard/campaigns/${campaign.id}/edit`}
-                icon={PencilEdit02Icon}
-              />
-            )}
-
-            {/* Draft → real delete */}
-            {isDraft && (
-              <button
-                type="button"
-                title="Delete campaign"
-                onClick={() => setShowDeleteModal(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-(--text-muted) transition hover:bg-red-50 hover:text-red-600"
-              >
-                <HugeiconsIcon icon={Delete02Icon} size={16} />
-              </button>
-            )}
-
-            {/* Active → close only */}
-          </div>
+          {isDraft && (
+            <button
+              type="button"
+              title="Delete campaign"
+              onClick={() => setShowDeleteModal(true)}
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-(--text-muted) transition hover:bg-red-50 hover:text-red-600"
+            >
+              <HugeiconsIcon icon={Delete02Icon} size={18} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -98,13 +123,12 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
               toast.success("Campaign deleted");
               setShowDeleteModal(false);
             },
-            onError: (err: unknown) => {
+            onError: (err) => {
               const axiosError = err as {
                 response?: { data?: { message?: string } };
               };
               toast.error(
-                axiosError.response?.data?.message ||
-                  "Failed to delete campaign"
+                axiosError.response?.data?.message || "Failed to delete campaign"
               );
             },
           });
@@ -128,9 +152,9 @@ function IconButton({
     <Link
       to={to}
       title={label}
-      className="flex h-8 w-8 items-center justify-center rounded-lg text-(--text-muted) transition hover:bg-(--background) hover:text-(--text-primary)"
+      className="flex h-11 w-11 items-center justify-center rounded-xl text-(--text-muted) transition hover:bg-(--background) hover:text-(--text-primary)"
     >
-      <HugeiconsIcon icon={icon} size={16} />
+      <HugeiconsIcon icon={icon} size={18} />
     </Link>
   );
 }

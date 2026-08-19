@@ -1,11 +1,7 @@
 import { Link } from "react-router-dom";
-import { useCampaigns } from "../../hooks/useCampaigns";
 import { CampaignList } from "../../components/organizer";
 
 export default function CampaignListPage() {
-  const { data, isLoading, isError } = useCampaigns();
-  const campaigns = data ?? [];
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
@@ -29,22 +25,7 @@ export default function CampaignListPage() {
         </Link>
       </div>
 
-      {isError ? (
-        <div className="rounded-2xl border border-(--border) bg-(--surface) px-4 py-10 text-center">
-          <p className="text-sm text-(--text-muted)">
-            Couldn’t load campaigns. Please try again.
-          </p>
-        </div>
-      ) : (
-        <CampaignList campaigns={campaigns} isLoading={isLoading} />
-      )}
+      <CampaignList />
     </div>
   );
 }
-
-
-// import { CampaignList } from "../../components/organizer";
-
-// // ...
-
-// <CampaignList campaigns={campaigns} />

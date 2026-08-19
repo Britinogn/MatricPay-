@@ -24,8 +24,8 @@ export function ListItemSkeleton() {
   return (
     <div className="flex items-center justify-between gap-3 px-4 py-3.5">
       <div className="min-w-0 flex-1 space-y-2">
-        <Skeleton className="h-4 w-2/3 max-w-[220px]" />
-        <Skeleton className="h-3 w-1/3 max-w-[140px]" />
+        <Skeleton className="h-4 w-2/3 max-w-55" />
+        <Skeleton className="h-3 w-1/3 max-w-35" />
       </div>
       <div className="flex items-center gap-3">
         <Skeleton className="h-4 w-16" />

@@ -37,7 +37,7 @@ function CustomTooltip({
   const value = Number(payload[0]?.value ?? 0);
 
   return (
-    <div className="min-w-[170px] rounded-xl border border-(--border) bg-(--surface) px-4 py-3 shadow-lg">
+    <div className="min-w-42.5 rounded-xl border border-(--border) bg-(--surface) px-4 py-3 shadow-lg">
       <p className="mb-1 text-xs font-medium text-(--text-muted)">
         {label}
       </p>
@@ -146,7 +146,7 @@ export function CollectionChart({
       )}
 
       {/* Chart */}
-      <div className="mt-6 h-[280px] w-full">
+      <div className="mt-6 h-70 w-full">
         {chartData.length > 0 ? (
           <ResponsiveContainer
             width="100%"

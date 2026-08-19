@@ -9,4 +9,4 @@ export type { CampaignFormValues } from "./CampaignForm";
 
 export { CampaignDetailActions } from "./CampaignDetailActions";
 export { CampaignFilters } from "./CampaignFilters";
-export type { CampaignStatusFilter } from "./CampaignFilters";
+export type { CampaignStatusFilter, CampaignTypeFilter} from "./CampaignFilters";

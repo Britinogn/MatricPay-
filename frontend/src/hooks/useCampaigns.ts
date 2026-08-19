@@ -1,18 +1,58 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import type { CreateCampaignPayload } from "../types";
+import type { CreateCampaignPayload, Campaign } from "../types";
 
-export function useCampaigns() {
+// ---------- Query types ----------
+export type CampaignsQuery = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  status?: "all" | "draft" | "active" | "closed";
+  campaignType?: "all" | "restricted" | "open";
+};
+
+export type CampaignsListResult = {
+  campaigns: Campaign[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+// ---------- Hooks ----------
+
+export function useCampaigns(query: CampaignsQuery = {}) {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 25;
+  const search = query.search?.trim() || undefined;
+  const status = query.status === "all" ? undefined : query.status;
+  const campaignType = query.campaignType === "all" ? undefined : query.campaignType;
+
   return useQuery({
-    queryKey: ["campaigns"],
-    queryFn: async () => {
-      const res = await api.get("/campaigns");
-      // handle both shapes safely
+    queryKey: ["campaigns", { page, limit, search, status, campaignType }],
+    queryFn: async (): Promise<CampaignsListResult> => {
+      const res = await api.get("/campaigns", {
+        params: {
+          page,
+          limit,
+          ...(search ? { search } : {}),
+          ...(status ? { status } : {}),
+          ...(campaignType ? { campaignType } : {}),
+        },
+      });
+
       const payload = res.data.data ?? res.data;
-      return payload.campaigns ?? payload;
+      const campaigns = payload.campaigns ?? payload;
+      return {
+        campaigns: Array.isArray(campaigns) ? campaigns : [],
+        total: payload.total ?? (Array.isArray(campaigns) ? campaigns.length : 0),
+        page: payload.page ?? page,
+        limit: payload.limit ?? limit,
+      };
     },
   });
 }
+
+// (rest of hooks unchanged, but I'll include them for completeness)
 
 export function useCampaign(id: string | undefined) {
   return useQuery({
@@ -26,24 +66,12 @@ export function useCampaign(id: string | undefined) {
   });
 }
 
-// export function useCampaign(id: string | undefined) {
-//   return useQuery({
-//     queryKey: ["campaigns", id],
-//     queryFn: async () => {
-//       const res = await api.get<{ data: Campaign }>(`/campaigns/${id}`);
-//       return res.data.data;
-//     },
-//     enabled: !!id,
-//   });
-// }
-
 export function useCreateCampaign() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: CreateCampaignPayload) => {
       const res = await api.post("/campaigns", payload);
-      // support both shapes
       return res.data.data ?? res.data;
     },
     onSuccess: () => {
@@ -110,6 +138,21 @@ export function useDeleteCampaign() {
   return useMutation({
     mutationFn: async (id: string) => {
       const res = await api.delete(`/campaigns/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
+    },
+  });
+}
+
+export function useBulkDeleteCampaigns() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (campaignIds: string[]) => {
+      const res = await api.post("/campaigns/bulk-delete", { campaignIds });
       return res.data;
     },
     onSuccess: () => {

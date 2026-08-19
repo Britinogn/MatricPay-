@@ -136,7 +136,9 @@ export default function CampaignDetailPage() {
           {/* StudentList now only needs campaignId and canManage */}
           <StudentList
             campaignId={id!}
-            canManage={campaign.status === 'draft'}
+            // canManage={campaign.status === 'draft'}
+            // canManage
+            canManage={campaign.status === 'draft' || campaign.status === 'active'}
           />
         </div>
       </div>
