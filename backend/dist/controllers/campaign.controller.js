@@ -48,6 +48,25 @@ class CampaignController {
         const result = await campaign_service_1.campaignService.getPublicCampaignBySlug(slug);
         response.status(200).json(result);
     }
+    async remove(request, response) {
+        const id = typeof request.params.id === "string"
+            ? request.params.id
+            : request.params.id[0];
+        if (!id) {
+            throw new http_error_1.HttpError(400, "Campaign id is required");
+        }
+        await campaign_service_1.campaignService.deleteCampaign(request.user, id);
+        response.status(200).json({
+            success: true,
+            message: "Campaign deleted",
+        });
+    }
+    async bulkDelete(request, response) {
+        const user = requireAuthenticatedUser(request);
+        const { campaignIds } = campaign_validator_1.BulkDeleteCampaignsSchema.parse(request.body);
+        const result = await campaign_service_1.campaignService.bulkDeleteCampaigns(user, campaignIds);
+        response.status(200).json(result);
+    }
 }
 exports.CampaignController = CampaignController;
 exports.campaignController = new CampaignController();

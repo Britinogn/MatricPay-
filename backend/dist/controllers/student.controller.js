@@ -63,6 +63,50 @@ class StudentController {
         const result = await student_service_1.studentService.validateStudent(slug, data);
         response.status(200).json(result);
     }
+    async removeStudent(request, response) {
+        const campaignId = typeof request.params.id === "string"
+            ? request.params.id
+            : request.params.id[0];
+        const studentId = typeof request.params.studentId === "string"
+            ? request.params.studentId
+            : request.params.studentId[0];
+        if (!campaignId || !studentId) {
+            throw new http_error_1.HttpError(400, "Campaign id and student id are required");
+        }
+        await student_service_1.studentService.deleteStudent(request.user, campaignId, studentId);
+        response.status(200).json({
+            success: true,
+            message: "Student removed",
+        });
+    }
+    async updateStudent(request, response) {
+        const campaignId = typeof request.params.id === "string"
+            ? request.params.id
+            : request.params.id[0];
+        const studentId = typeof request.params.studentId === "string"
+            ? request.params.studentId
+            : request.params.studentId[0];
+        if (!campaignId || !studentId) {
+            throw new http_error_1.HttpError(400, "Campaign id and student id are required");
+        }
+        const data = student_validator_1.UpdateStudentSchema.parse(request.body);
+        const result = await student_service_1.studentService.updateStudent(request.user, campaignId, studentId, data);
+        response.status(200).json({
+            success: true,
+            ...result,
+        });
+    }
+    async bulkDeleteStudents(request, response) {
+        const campaignId = typeof request.params.id === "string"
+            ? request.params.id
+            : request.params.id[0];
+        if (!campaignId) {
+            throw new http_error_1.HttpError(400, "Campaign id is required");
+        }
+        const data = student_validator_1.BulkDeleteStudentsSchema.parse(request.body);
+        const result = await student_service_1.studentService.bulkDeleteStudents(request.user, campaignId, data);
+        response.status(200).json(result);
+    }
 }
 exports.StudentController = StudentController;
 exports.studentController = new StudentController();

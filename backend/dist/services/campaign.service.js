@@ -195,6 +195,43 @@ class CampaignService {
         }
         return campaign;
     }
+    async deleteCampaign(user, campaignId) {
+        const campaign = await this.getOwnedCampaign(user, campaignId);
+        if (campaign.status !== client_1.CampaignStatus.draft) {
+            throw new http_error_1.HttpError(400, "Only draft campaigns can be deleted. Close active campaigns instead.");
+        }
+        const paymentCount = await campaign_repository_1.campaignRepository.countPayments(campaign.id);
+        if (paymentCount > 0) {
+            throw new http_error_1.HttpError(400, "Cannot delete a campaign that already has payments");
+        }
+        // Remove students first if cascade is not set on the relation
+        await campaign_repository_1.campaignRepository.deleteStudentsByCampaignId(campaign.id);
+        await campaign_repository_1.campaignRepository.delete(campaign.id);
+        return { success: true };
+    }
+    async bulkDeleteCampaigns(user, campaignIds) {
+        const campaigns = [];
+        for (const id of campaignIds) {
+            const campaign = await this.getOwnedCampaign(user, id);
+            if (!campaign) {
+                throw new http_error_1.HttpError(404, "Campaign not found");
+            }
+            if (campaign.status !== client_1.CampaignStatus.draft) {
+                throw new http_error_1.HttpError(400, "Only draft campaigns can be deleted");
+            }
+            const paymentCount = await campaign_repository_1.campaignRepository.countPayments(campaign.id);
+            if (paymentCount > 0) {
+                throw new http_error_1.HttpError(400, "Cannot delete a campaign that already has payments");
+            }
+            campaigns.push(campaign);
+        }
+        // Perform bulk deletion in a single transaction
+        await campaign_repository_1.campaignRepository.bulkDelete(campaigns.map((c) => c.id));
+        return {
+            success: true,
+            deletedCount: campaigns.length,
+        };
+    }
 }
 exports.CampaignService = CampaignService;
 exports.campaignService = new CampaignService();

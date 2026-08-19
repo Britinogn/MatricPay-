@@ -154,6 +154,76 @@ class StudentService {
         }
         return campaign;
     }
+    async deleteStudent(user, campaignId, studentId) {
+        const campaign = await this.getOwnedCampaign(user, campaignId);
+        // Only allow edits on draft campaigns (same rule as add/import)
+        if (campaign.status !== client_1.CampaignStatus.draft) {
+            throw new http_error_1.HttpError(400, "Students can only be removed before campaign activation");
+        }
+        const student = await student_repository_1.studentRepository.findByIdAndCampaignId(studentId, campaign.id);
+        if (!student) {
+            throw new http_error_1.HttpError(404, "Student not found");
+        }
+        await student_repository_1.studentRepository.deleteById(student.id);
+        return {
+            success: true,
+            message: "Student removed",
+        };
+    }
+    async updateStudent(user, campaignId, studentId, input) {
+        const campaign = await this.getOwnedCampaign(user, campaignId);
+        if (campaign.status !== client_1.CampaignStatus.draft) {
+            throw new http_error_1.HttpError(400, "Students can only be edited before campaign activation");
+        }
+        const student = await student_repository_1.studentRepository.findByIdAndCampaignId(studentId, campaign.id);
+        if (!student) {
+            throw new http_error_1.HttpError(404, "Student not found");
+        }
+        const data = {};
+        if (input.fullName !== undefined) {
+            data.fullName = input.fullName.trim();
+        }
+        if (input.matricNumber !== undefined) {
+            const matricNumber = (0, matric_number_1.normalizeMatricNumber)(input.matricNumber);
+            if (!matricNumber) {
+                throw new http_error_1.HttpError(400, "Invalid matric number");
+            }
+            // uniqueness check if matric is changing
+            if (matricNumber !== student.matricNumber) {
+                const existing = await student_repository_1.studentRepository.findByCampaignAndMatricNumber(campaign.id, matricNumber);
+                if (existing) {
+                    throw new http_error_1.HttpError(400, "A student with this matric number already exists");
+                }
+            }
+            data.matricNumber = matricNumber;
+        }
+        if (input.email !== undefined) {
+            data.email = input.email?.trim().toLowerCase() || null;
+        }
+        if (input.phone !== undefined) {
+            data.phone = input.phone?.trim() || null;
+        }
+        if (input.department !== undefined) {
+            data.department = input.department?.trim() || null;
+        }
+        if (input.level !== undefined) {
+            data.level = input.level?.trim() || null;
+        }
+        const updated = await student_repository_1.studentRepository.updateById(student.id, data);
+        return { student: updated };
+    }
+    async bulkDeleteStudents(user, campaignId, input) {
+        const campaign = await this.getOwnedCampaign(user, campaignId);
+        if (campaign.status !== client_1.CampaignStatus.draft) {
+            throw new http_error_1.HttpError(400, "Students can only be removed before campaign activation");
+        }
+        const deleted = await student_repository_1.studentRepository.deleteManyByIds(campaign.id, input.studentIds);
+        return {
+            success: true,
+            deleted,
+            message: `${deleted} student(s) removed`,
+        };
+    }
 }
 exports.StudentService = StudentService;
 exports.studentService = new StudentService();

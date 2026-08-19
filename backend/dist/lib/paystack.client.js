@@ -54,10 +54,13 @@ class PaystackClient {
     }
     async resolveAccountNumber(payload) {
         try {
-            const response = await fetch(`${this.baseUrl}/bank/resolve`, {
-                method: "POST",
+            const params = new URLSearchParams({
+                account_number: payload.account_number,
+                bank_code: payload.bank_code,
+            });
+            const response = await fetch(`${this.baseUrl}/bank/resolve?${params.toString()}`, {
+                method: "GET",
                 headers: this.headers,
-                body: JSON.stringify(payload),
             });
             const body = await response.json();
             if (!response.ok || !body.status) {

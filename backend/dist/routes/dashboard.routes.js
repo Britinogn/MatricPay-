@@ -9,4 +9,5 @@ exports.dashboardRoutes = (0, express_1.Router)();
 exports.dashboardRoutes.use(auth_middleware_1.authMiddleware);
 exports.dashboardRoutes.get("/overview", (0, async_handler_1.asyncHandler)(dashboard_controller_1.dashboardController.getOrganizerOverview.bind(dashboard_controller_1.dashboardController)));
 exports.dashboardRoutes.get("/:id/dashboard", (0, async_handler_1.asyncHandler)(dashboard_controller_1.dashboardController.getCampaignDashboard.bind(dashboard_controller_1.dashboardController)));
+exports.dashboardRoutes.get("/:id/dashboard/timeseries", (0, async_handler_1.asyncHandler)(dashboard_controller_1.dashboardController.getCollectionTimeseries.bind(dashboard_controller_1.dashboardController)));
 //# sourceMappingURL=dashboard.routes.js.map

@@ -33,8 +33,10 @@ class PaymentController {
         if (!signature) {
             throw new http_error_1.HttpError(400, "Missing Paystack signature header");
         }
-        const rawBody = request.rawBody || JSON.stringify(request.body);
-        const result = await payment_service_1.paymentService.handlePaystackWebhook(signature, rawBody, request.body);
+        if (!request.rawBody) {
+            throw new http_error_1.HttpError(500, "Raw request body was not captured — check app.ts's express.json() verify callback");
+        }
+        const result = await payment_service_1.paymentService.handlePaystackWebhook(signature, request.rawBody, request.body);
         response.status(200).json(result);
     }
 }

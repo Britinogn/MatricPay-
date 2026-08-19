@@ -105,6 +105,34 @@ class StudentRepository {
     async createStudentImport(data) {
         return prisma_1.prisma.studentImport.create({ data });
     }
+    async findByIdAndCampaignId(studentId, campaignId) {
+        return prisma_1.prisma.student.findFirst({
+            where: {
+                id: studentId,
+                campaignId,
+            },
+        });
+    }
+    async deleteById(studentId) {
+        return prisma_1.prisma.student.delete({
+            where: { id: studentId },
+        });
+    }
+    async updateById(studentId, data) {
+        return prisma_1.prisma.student.update({
+            where: { id: studentId },
+            data,
+        });
+    }
+    async deleteManyByIds(campaignId, studentIds) {
+        const result = await prisma_1.prisma.student.deleteMany({
+            where: {
+                campaignId,
+                id: { in: studentIds },
+            },
+        });
+        return result.count;
+    }
 }
 exports.StudentRepository = StudentRepository;
 exports.studentRepository = new StudentRepository();

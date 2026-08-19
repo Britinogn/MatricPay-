@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CampaignListQuerySchema = exports.UpdateCampaignStatusSchema = exports.CampaignSlugParamSchema = exports.CampaignIdParamSchema = exports.UpdateCampaignSchema = exports.CreateCampaignSchema = void 0;
+exports.BulkDeleteCampaignsSchema = exports.CampaignListQuerySchema = exports.UpdateCampaignStatusSchema = exports.CampaignSlugParamSchema = exports.CampaignIdParamSchema = exports.UpdateCampaignSchema = exports.CreateCampaignSchema = void 0;
 const zod_1 = require("zod");
 const uuidSchema = zod_1.z.uuid({ message: "Invalid ID format" });
 const currencySchema = zod_1.z
@@ -77,6 +77,11 @@ exports.CampaignListQuerySchema = zod_1.z.object({
     campaignType: zod_1.z.enum(["restricted", "open"]).optional(),
     search: zod_1.z.string().trim().min(1).max(120).optional(),
     page: zod_1.z.coerce.number().int().positive().default(1),
-    limit: zod_1.z.coerce.number().int().positive().max(100).default(20),
+    limit: zod_1.z.coerce.number().int().positive().max(100).default(25),
+});
+exports.BulkDeleteCampaignsSchema = zod_1.z.object({
+    campaignIds: zod_1.z
+        .array(uuidSchema)
+        .min(1, { message: "At least one campaign ID is required" }),
 });
 //# sourceMappingURL=campaign.validator.js.map

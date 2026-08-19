@@ -39,4 +39,8 @@ exports.studentRoutes.get("/:id/students", (0, async_handler_1.asyncHandler)(stu
 exports.studentRoutes.post("/:id/students/import/csv", upload.single("file"), (0, async_handler_1.asyncHandler)(student_controller_1.studentController.importCsv.bind(student_controller_1.studentController)));
 exports.studentRoutes.post("/:id/students/import/excel", upload.single("file"), (0, async_handler_1.asyncHandler)(student_controller_1.studentController.importExcel.bind(student_controller_1.studentController)));
 exports.studentRoutes.post("/:id/students/import/xlsx", upload.single("file"), (0, async_handler_1.asyncHandler)(student_controller_1.studentController.importExcel.bind(student_controller_1.studentController)));
+exports.studentRoutes.delete("/:id/students/:studentId", (0, async_handler_1.asyncHandler)(student_controller_1.studentController.removeStudent.bind(student_controller_1.studentController)));
+// Update student
+exports.studentRoutes.patch("/:id/students/:studentId", (0, async_handler_1.asyncHandler)(student_controller_1.studentController.updateStudent.bind(student_controller_1.studentController)));
+exports.studentRoutes.post("/:id/students/bulk-delete", (0, async_handler_1.asyncHandler)(student_controller_1.studentController.bulkDeleteStudents.bind(student_controller_1.studentController)));
 //# sourceMappingURL=student.routes.js.map

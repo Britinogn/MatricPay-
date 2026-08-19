@@ -4,6 +4,13 @@ exports.payoutAccountController = exports.PayoutAccountController = void 0;
 const payout_account_service_1 = require("../services/payout-account.service");
 const payout_account_validator_1 = require("../validators/payout-account.validator");
 class PayoutAccountController {
+    async getPayoutAccount(request, response) {
+        const result = await payout_account_service_1.payoutAccountService.getPayoutAccount(request.user.id);
+        response.status(200).json({
+            success: true,
+            data: result,
+        });
+    }
     async resolveAccount(request, response) {
         const data = payout_account_validator_1.ResolveAccountSchema.parse(request.body);
         const result = await payout_account_service_1.payoutAccountService.resolveAccountNumber(request.user.id, data);

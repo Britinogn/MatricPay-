@@ -114,6 +114,15 @@ class PaymentService {
             where: { id: campaign.organizerId },
             select: { paystackSubaccountCode: true },
         });
+        // This should be unreachable — campaign.service.ts's activation guard
+        // already blocks activation without a linked payout account. Treating
+        // this as a hard failure rather than silently omitting the subaccount
+        // fields matters: without it, a bug or bypass upstream would result in
+        // the FULL payment settling into MatricPay's own account with no split
+        // at all, silently, instead of failing loudly right here.
+        if (!organizer?.paystackSubaccountCode) {
+            throw new http_error_1.HttpError(500, "Organizer has no linked payout account — payment cannot be initialized. This should have been blocked at campaign activation.");
+        }
         const initPayload = {
             email: student.email || `student.${student.matricNumber.toLowerCase()}@matricpay.internal`,
             amount: amountInKobo,
@@ -125,13 +134,10 @@ class PaymentService {
                 matricNumber: student.matricNumber,
                 paymentId: paymentRecord.id,
             },
+            subaccount: organizer.paystackSubaccountCode,
+            bearer: "subaccount", // Organizer bears Paystack's processing fee
+            transaction_charge: Math.round(amountInKobo * 0.02), // 2% platform fee, flat kobo amount
         };
-        // Add subaccount settlement if organizer has one
-        if (organizer?.paystackSubaccountCode) {
-            initPayload.subaccount = organizer.paystackSubaccountCode;
-            initPayload.bearer = "subaccount"; // Organizer bears Paystack's processing fee
-            initPayload.transaction_charge = Math.round(amountInKobo * 0.02); // 2% platform fee
-        }
         const paystackRes = await paystack_client_1.paystackClient.initializeTransaction(initPayload);
         return {
             authorizationUrl: paystackRes.authorization_url,

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StudentListQuerySchema = exports.ValidateStudentSchema = exports.CreateStudentsSchema = exports.StudentInputSchema = exports.CampaignSlugParamSchema = exports.CampaignIdParamSchema = void 0;
+exports.BulkDeleteStudentsSchema = exports.UpdateStudentSchema = exports.StudentListQuerySchema = exports.ValidateStudentSchema = exports.CreateStudentsSchema = exports.StudentInputSchema = exports.CampaignSlugParamSchema = exports.CampaignIdParamSchema = void 0;
 const zod_1 = require("zod");
 const uuidSchema = zod_1.z.uuid({ message: "Invalid campaign ID format" });
 exports.CampaignIdParamSchema = zod_1.z.object({
@@ -46,5 +46,12 @@ exports.StudentListQuerySchema = zod_1.z.object({
     search: zod_1.z.string().trim().min(1).max(120).optional(),
     page: zod_1.z.coerce.number().int().positive().default(1),
     limit: zod_1.z.coerce.number().int().positive().max(100).default(20),
+});
+exports.UpdateStudentSchema = exports.StudentInputSchema.partial().refine((data) => Object.keys(data).length > 0, { message: "At least one field is required" });
+exports.BulkDeleteStudentsSchema = zod_1.z.object({
+    studentIds: zod_1.z
+        .array(zod_1.z.string().uuid({ message: "Invalid student id" }))
+        .min(1, { message: "Select at least one student" })
+        .max(500, { message: "Cannot delete more than 500 students at once" }),
 });
 //# sourceMappingURL=student.validator.js.map

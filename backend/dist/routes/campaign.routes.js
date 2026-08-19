@@ -13,4 +13,6 @@ exports.campaignRoutes.get("/", (0, async_handler_1.asyncHandler)(campaign_contr
 exports.campaignRoutes.get("/:id", (0, async_handler_1.asyncHandler)(campaign_controller_1.campaignController.getById.bind(campaign_controller_1.campaignController)));
 exports.campaignRoutes.patch("/:id", (0, async_handler_1.asyncHandler)(campaign_controller_1.campaignController.update.bind(campaign_controller_1.campaignController)));
 exports.campaignRoutes.patch("/:id/status", (0, async_handler_1.asyncHandler)(campaign_controller_1.campaignController.updateStatus.bind(campaign_controller_1.campaignController)));
+exports.campaignRoutes.delete("/:id", (0, async_handler_1.asyncHandler)(campaign_controller_1.campaignController.remove.bind(campaign_controller_1.campaignController)));
+exports.campaignRoutes.post("/bulk-delete", (0, async_handler_1.asyncHandler)(campaign_controller_1.campaignController.bulkDelete.bind(campaign_controller_1.campaignController)));
 //# sourceMappingURL=campaign.routes.js.map

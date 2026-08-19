@@ -85,6 +85,42 @@ class CampaignRepository {
             },
         });
     }
+    async countPayments(campaignId) {
+        return prisma_1.prisma.payment.count({ where: { campaignId } });
+    }
+    async deleteStudentsByCampaignId(campaignId) {
+        await prisma_1.prisma.student.deleteMany({ where: { campaignId } });
+    }
+    async delete(id) {
+        await prisma_1.prisma.campaign.delete({ where: { id } });
+    }
+    async findManyByIdsForOrganizer(ids, organizerId) {
+        return prisma_1.prisma.campaign.findMany({
+            where: {
+                id: { in: ids },
+                organizerId,
+            },
+        });
+    }
+    async bulkDelete(campaignIds) {
+        await prisma_1.prisma.$transaction(async (tx) => {
+            // Delete associated students first (or rely on cascade delete)
+            await tx.student.deleteMany({
+                where: { campaignId: { in: campaignIds } },
+            });
+            // Delete student imports if needed (if not cascaded)
+            await tx.studentImport.deleteMany({
+                where: { campaignId: { in: campaignIds } },
+            });
+            // Delete payments? But we already verified no payments exist.
+            // If you have a Payment model and want to be safe, you could delete them too,
+            // but we'll skip because service checks paymentCount.
+            // Finally delete campaigns
+            await tx.campaign.deleteMany({
+                where: { id: { in: campaignIds } },
+            });
+        });
+    }
 }
 exports.CampaignRepository = CampaignRepository;
 exports.campaignRepository = new CampaignRepository();
