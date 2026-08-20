@@ -140,7 +140,13 @@ export class PaymentService {
       });
     }
 
-    const amountInKobo = Math.round(targetAmount * 100);
+    // const amountInKobo = Math.round(targetAmount * 100);
+
+    // targetAmount is a whole Naira amount (stored as campaign.amount)
+    // So totalKobo is already whole kobo
+    const totalKobo = Math.round(Number(targetAmount) * 100); // total customer pays
+    const transactionChargeKobo = Math.ceil(totalKobo * 0.02); // 2% platform fee, rounded up
+    const amountInKobo = totalKobo - transactionChargeKobo; // base amount for Paystack
     const callbackUrl = `${env.CLIENT_URL}/pay/${campaign.slug}/success?reference=${reference}`;
 
     // Fetch organizer to get subaccount code
@@ -175,7 +181,8 @@ export class PaymentService {
       },
       subaccount: organizer.paystackSubaccountCode,
       bearer: "subaccount", // Organizer bears Paystack's processing fee
-      transaction_charge: Math.round(amountInKobo * 0.02), // 2% platform fee, flat kobo amount
+      // transaction_charge: Math.round(amountInKobo * 0.02), // 2% platform fee, flat kobo amount
+      transaction_charge: transactionChargeKobo,
     };
 
     const paystackRes = await paystackClient.initializeTransaction(initPayload);
@@ -205,9 +212,11 @@ export class PaymentService {
         const verifyData = await paystackClient.verifyTransaction(reference);
 
         if (verifyData.status === "success") {
-          const expectedKobo = Math.round(Number(payment.amount) * 100);
+          // const expectedKobo = Math.round(Number(payment.amount) * 100);
+          const expectedTotalKobo = Math.round(Number(payment.amount) * 100);
 
-          if (verifyData.amount < expectedKobo) {
+          // if (verifyData.amount < expectedKobo) 
+          if (verifyData.amount !== expectedTotalKobo) {
             await paymentRepository.updateStatus(payment.id, {
               status: PaymentStatus.flagged,
               failureReason: PaymentFailureReason.amount_mismatch,
@@ -334,9 +343,11 @@ export class PaymentService {
         const verifyData = await paystackClient.verifyTransaction(reference);
 
         if (verifyData.status === "success") {
-          const expectedKobo = Math.round(Number(payment.amount) * 100);
+          // const expectedKobo = Math.round(Number(payment.amount) * 100);
+          const expectedTotalKobo = Math.round(Number(payment.amount) * 100);
 
-          if (verifyData.amount < expectedKobo) {
+          // if (verifyData.amount < expectedKobo) 
+          if (verifyData.amount !== expectedTotalKobo) {
             await paymentRepository.updateStatus(payment.id, {
               status: PaymentStatus.flagged,
               failureReason: PaymentFailureReason.amount_mismatch,

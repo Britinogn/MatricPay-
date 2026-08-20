@@ -15,10 +15,12 @@ export function calculateGrossFromNet(netAmountNaira: number): number {
   const grossCase1 = (net + 100) / 0.965;
   if (grossCase1 <= 126666.67) {
     // Round up to nearest kobo to ensure organizer never receives less
-    return Math.ceil(grossCase1 * 100) / 100;
+    // return Math.ceil(grossCase1 * 100) / 100;
+    return Math.ceil(grossCase1);
   }
 
   // Case 2: Paystack fee capped at ₦2,000
   const grossCase2 = (net + 2000) / 0.98;
-  return Math.ceil(grossCase2 * 100) / 100;
+  // return Math.ceil(grossCase2 * 100) / 100;
+  return Math.ceil(grossCase2);
 }
