@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { formatNaira } from "../../lib/format";
 import {
@@ -14,6 +14,7 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
 
   const [matricNumber, setMatricNumber] = useState("");
   const [student, setStudent] = useState<ValidatedStudent | null>(null);
+  const paymentAttemptKeyRef = useRef<string | null>(null);
 
   const handleValidate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,13 +33,19 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
 
   const handlePay = async () => {
     if (!student) return;
+
+    const idempotencyKey = paymentAttemptKeyRef.current ?? crypto.randomUUID();
+    paymentAttemptKeyRef.current = idempotencyKey;
+
     try {
       const result = await initiatePayment.mutateAsync({
         slug: campaign.slug,
         matricNumber: student.matricNumber,
+        idempotencyKey,
       });
       window.location.href = result.authorizationUrl;
     } catch (err: unknown) {
+      paymentAttemptKeyRef.current = null;
       const axiosError = err as { response?: { data?: { message?: string } } };
       toast.error(axiosError.response?.data?.message || "Could not start payment");
     }
@@ -91,7 +98,10 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
           </button>
           <button
             type="button"
-            onClick={() => setStudent(null)}
+            onClick={() => {
+              paymentAttemptKeyRef.current = null;
+              setStudent(null);
+            }}
             className="w-full text-sm text-(--text-muted) hover:text-(--text-primary)"
           >
             Use a different matric number

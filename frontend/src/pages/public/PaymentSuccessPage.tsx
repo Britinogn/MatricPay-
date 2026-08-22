@@ -115,7 +115,7 @@ export default function PaymentSuccessPage() {
           </div>
         )}
 
-        {(status === "failed" || status === "flagged" || status === "expired") && (
+        {(status === "failed" || status === "flagged" || status === "expired" || status === "superseded") && (
           <div className="mt-6 space-y-3">
             <HugeiconsIcon
               icon={CancelCircleIcon}

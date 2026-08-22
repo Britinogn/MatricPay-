@@ -67,6 +67,7 @@ export function useInitiatePayment() {
       department?: string;
       level?: string;
       amount?: number;
+      idempotencyKey: string;
     }) => {
       const res = await api.post("/payments/initiate", payload);
       const data = res.data.data ?? res.data;
@@ -105,7 +106,13 @@ export function usePaymentStatus(reference: string | undefined) {
     enabled: !!reference,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      if (status === "successful" || status === "failed" || status === "flagged" || status === "expired") {
+      if (
+        status === "successful" ||
+        status === "failed" ||
+        status === "flagged" ||
+        status === "expired" ||
+        status === "superseded"
+      ) {
         return false;
       }
       return 3000;

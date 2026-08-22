@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { formatNaira } from "../../lib/format";
 import { useInitiatePayment, type PublicCampaign } from "../../hooks/usePayments";
@@ -12,6 +12,7 @@ export function OpenPaymentForm({ campaign }: { campaign: PublicCampaign }) {
   const [matricNumber, setMatricNumber] = useState("");
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState(isMinimum ? String(minAmount) : "");
+  const paymentAttemptKeyRef = useRef<string | null>(null);
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,12 +23,16 @@ export function OpenPaymentForm({ campaign }: { campaign: PublicCampaign }) {
       fullName: string;
       email?: string;
       amount?: number;
+      idempotencyKey: string;
     } = {
       slug: campaign.slug,
       matricNumber: matricNumber.trim(),
       fullName: fullName.trim(),
       email: email.trim() || undefined,
+      idempotencyKey: paymentAttemptKeyRef.current ?? crypto.randomUUID(),
     };
+
+    paymentAttemptKeyRef.current = payload.idempotencyKey;
 
     if (isMinimum) {
       const value = Number(amount);
@@ -42,6 +47,7 @@ export function OpenPaymentForm({ campaign }: { campaign: PublicCampaign }) {
       const result = await initiatePayment.mutateAsync(payload);
       window.location.href = result.authorizationUrl;
     } catch (err: unknown) {
+      paymentAttemptKeyRef.current = null;
       const axiosError = err as { response?: { data?: { message?: string } } };
       toast.error(axiosError.response?.data?.message || "Could not start payment");
     }

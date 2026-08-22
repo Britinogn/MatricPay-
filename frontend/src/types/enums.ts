@@ -10,13 +10,15 @@ export type PaymentStatus =
     | "successful"
     | "failed"
     | "expired"
+    | "superseded"
     | "flagged";
 
 export type PaymentFailureReason =
     | "amount_mismatch"
     | "currency_mismatch"
     | "verification_failed"
-    | "cancelled_by_user";
+    | "cancelled_by_user"
+    | "superseded_attempt";
 
 export type PaymentProvider = "paystack";
 

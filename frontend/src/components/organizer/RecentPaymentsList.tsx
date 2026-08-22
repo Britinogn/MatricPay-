@@ -16,6 +16,7 @@ const statusColors: Record<PaymentStatus, string> = {
   pending: "var(--accent)",
   failed: "#B3492F",
   expired: "var(--text-muted)",
+  superseded: "var(--text-muted)",
   flagged: "#B3492F",
 };
 
