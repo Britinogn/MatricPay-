@@ -37,6 +37,7 @@ enum PaymentStatus {
   successful
   failed
   expired
+  superseded
   flagged
 }
 
@@ -45,6 +46,7 @@ enum PaymentFailureReason {
   currency_mismatch
   verification_failed
   cancelled_by_user
+  superseded_attempt
 }
 
 enum PaymentProvider {
@@ -200,6 +202,9 @@ model Payment {
   currency              String                @default("NGN")
   provider              PaymentProvider       @default(paystack)
   reference             String                @unique
+  idempotencyKey        String?               @unique @map("idempotency_key")
+  authorizationUrl      String?               @map("authorization_url")
+  accessCode            String?               @map("access_code")
   providerTransactionId String?               @map("provider_transaction_id")
   status                PaymentStatus         @default(pending)
   failureReason         PaymentFailureReason? @map("failure_reason")

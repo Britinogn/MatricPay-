@@ -40,6 +40,7 @@ export class PaymentRepository {
     amount: number | Prisma.Decimal;
     currency?: string;
     reference: string;
+    idempotencyKey: string;
     expiresAt: Date;
     provider?: PaymentProvider;
   }) {
@@ -51,9 +52,133 @@ export class PaymentRepository {
         currency: data.currency ?? "NGN",
         provider: data.provider ?? PaymentProvider.paystack,
         reference: data.reference,
+        idempotencyKey: data.idempotencyKey,
         status: PaymentStatus.pending,
         expiresAt: data.expiresAt,
       },
+    });
+  }
+
+  async createPaymentAttempt(data: {
+    campaignId: string;
+    studentId: string;
+    amount: number | Prisma.Decimal;
+    currency?: string;
+    reference: string;
+    idempotencyKey: string;
+    expiresAt: Date;
+    provider?: PaymentProvider;
+  }) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        return await prisma.$transaction(
+          async (transaction) => {
+            const existingAttempt = await transaction.payment.findUnique({
+              where: { idempotencyKey: data.idempotencyKey },
+            });
+
+            if (existingAttempt) {
+              return { payment: existingAttempt, isDuplicateRequest: true };
+            }
+
+            const activeAttempt = await transaction.payment.findFirst({
+              where: {
+                campaignId: data.campaignId,
+                studentId: data.studentId,
+                status: PaymentStatus.pending,
+              },
+              orderBy: { createdAt: "desc" },
+            });
+
+            if (activeAttempt) {
+              await transaction.payment.update({
+                where: { id: activeAttempt.id },
+                data: {
+                  status: PaymentStatus.superseded,
+                  failureReason: PaymentFailureReason.superseded_attempt,
+                },
+              });
+
+              await transaction.auditLog.create({
+                data: {
+                  actorRole: UserRole.organizer,
+                  event: "payment.superseded",
+                  entityType: "payment",
+                  entityId: activeAttempt.id,
+                  metadata: {
+                    reference: activeAttempt.reference,
+                    replacementReference: data.reference,
+                  },
+                },
+              });
+            }
+
+            const payment = await transaction.payment.create({
+              data: {
+                campaignId: data.campaignId,
+                studentId: data.studentId,
+                amount: data.amount,
+                currency: data.currency ?? "NGN",
+                provider: data.provider ?? PaymentProvider.paystack,
+                reference: data.reference,
+                idempotencyKey: data.idempotencyKey,
+                status: PaymentStatus.pending,
+                expiresAt: data.expiresAt,
+              },
+            });
+
+            await transaction.auditLog.create({
+              data: {
+                actorRole: UserRole.organizer,
+                event: "payment.initiated",
+                entityType: "payment",
+                entityId: payment.id,
+                metadata: {
+                  reference: payment.reference,
+                  campaignId: payment.campaignId,
+                  studentId: payment.studentId,
+                  amount: payment.amount,
+                  idempotencyKey: data.idempotencyKey,
+                },
+              },
+            });
+
+            return { payment, isDuplicateRequest: false };
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+        );
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2034" &&
+          attempt < 2
+        ) {
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    throw new Error("Payment attempt could not be created after transaction retries");
+  }
+
+  async saveCheckoutSession(
+    paymentId: string,
+    data: { authorizationUrl: string; accessCode: string }
+  ) {
+    return prisma.payment.update({
+      where: { id: paymentId },
+      data: {
+        authorizationUrl: data.authorizationUrl,
+        accessCode: data.accessCode,
+      },
+    });
+  }
+
+  async findByIdempotencyKey(idempotencyKey: string) {
+    return prisma.payment.findUnique({
+      where: { idempotencyKey },
     });
   }
 

@@ -9,6 +9,7 @@ export const initiatePaymentSchema = z.object({
   department: z.string().optional(),
   level: z.string().optional(),
   amount: z.coerce.number().positive("Amount must be greater than 0").optional(),
+  idempotencyKey: z.string().uuid("A valid payment attempt key is required"),
 });
 
 export type InitiatePaymentInput = z.infer<typeof initiatePaymentSchema>;

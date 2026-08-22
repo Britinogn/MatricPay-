@@ -104,43 +104,47 @@ export class PaymentService {
       throw new HttpError(400, "Payment has already been completed for this student");
     }
 
-    // Check for an active, non-expired pending payment
-    const existingPending = await paymentRepository.findPendingByCampaignAndStudent(
-      campaign.id,
-      student.id
-    );
+    const reference = generatePaymentReference();
+    const expiresAt = new Date(Date.now() + PENDING_PAYMENT_TTL_MS);
+    const paymentAttempt = await paymentRepository.createPaymentAttempt({
+      campaignId: campaign.id,
+      studentId: student.id,
+      amount: targetAmount,
+      currency: campaign.currency,
+      reference,
+      idempotencyKey: input.idempotencyKey,
+      expiresAt,
+    });
 
-    let reference: string;
-    let paymentRecord;
+    const paymentRecord = paymentAttempt.payment;
 
-    if (existingPending && Number(existingPending.amount) === targetAmount) {
-      reference = existingPending.reference;
-      paymentRecord = existingPending;
-    } else {
-      reference = generatePaymentReference();
-      const expiresAt = new Date(Date.now() + PENDING_PAYMENT_TTL_MS);
+    if (paymentAttempt.isDuplicateRequest) {
+      if (
+        paymentRecord.campaignId !== campaign.id ||
+        paymentRecord.studentId !== student.id
+      ) {
+        throw new HttpError(409, "Payment attempt key was already used for another payment");
+      }
 
-      paymentRecord = await paymentRepository.createPendingPayment({
-        campaignId: campaign.id,
-        studentId: student.id,
-        amount: targetAmount,
-        currency: campaign.currency,
-        reference,
-        expiresAt,
-      });
+      if (!paymentRecord.authorizationUrl || !paymentRecord.accessCode) {
+        throw new HttpError(
+          409,
+          "Payment initialization is still in progress. Please try again shortly."
+        );
+      }
 
-      await paymentRepository.createAuditLog({
-        actorRole: UserRole.organizer,
-        event: "payment.initiated",
-        entityType: "payment",
-        entityId: paymentRecord.id,
-        metadata: {
-          reference,
-          campaignId: campaign.id,
-          studentId: student.id,
-          amount: targetAmount,
+      return {
+        authorizationUrl: paymentRecord.authorizationUrl,
+        accessCode: paymentRecord.accessCode,
+        reference: paymentRecord.reference,
+        amount: Number(paymentRecord.amount),
+        currency: paymentRecord.currency,
+        student: {
+          id: student.id,
+          fullName: student.fullName,
+          matricNumber: student.matricNumber,
         },
-      });
+      };
     }
 
     const amountInKobo = Math.round(targetAmount * 100);
@@ -189,6 +193,11 @@ export class PaymentService {
     };
 
     const paystackRes = await paystackClient.initializeTransaction(initPayload);
+    await paymentRepository.saveCheckoutSession(paymentRecord.id, {
+      authorizationUrl: paystackRes.authorization_url,
+      accessCode: paystackRes.access_code,
+    });
+
     return {
       authorizationUrl: paystackRes.authorization_url,
       accessCode: paystackRes.access_code,
@@ -210,7 +219,10 @@ export class PaymentService {
       throw new HttpError(404, "Payment not found");
     }
 
-    if (payment.status === PaymentStatus.pending) {
+    if (
+      payment.status === PaymentStatus.pending ||
+      payment.status === PaymentStatus.superseded
+    ) {
       try {
         await this.reconcilePendingPayment(payment, "status_check");
       } catch (error) {
@@ -253,7 +265,10 @@ export class PaymentService {
     payment: PaymentWithRelations,
     source: "status_check" | "webhook"
   ) {
-    if (payment.status !== PaymentStatus.pending) {
+    if (
+      payment.status !== PaymentStatus.pending &&
+      payment.status !== PaymentStatus.superseded
+    ) {
       return payment;
     }
 
@@ -262,6 +277,32 @@ export class PaymentService {
     if (verifyData.status === "success") {
       const expectedAmountInKobo = Math.round(Number(payment.amount) * 100);
       const verifiedAt = verifyData.paid_at ? new Date(verifyData.paid_at) : new Date();
+
+      if (payment.status === PaymentStatus.superseded) {
+        const updatedPayment = await paymentRepository.updateStatus(payment.id, {
+          status: PaymentStatus.flagged,
+          failureReason: PaymentFailureReason.superseded_attempt,
+          providerTransactionId: String(verifyData.id),
+          verifiedAt,
+        });
+
+        Object.assign(payment, updatedPayment);
+
+        await paymentRepository.createAuditLog({
+          actorRole: UserRole.organizer,
+          event: "payment.flagged",
+          entityType: "payment",
+          entityId: payment.id,
+          metadata: {
+            reason: "superseded_attempt",
+            reference: payment.reference,
+            providerTransactionId: verifyData.id,
+            source,
+          },
+        });
+
+        return payment;
+      }
 
       if (verifyData.amount !== expectedAmountInKobo) {
         const updatedPayment = await paymentRepository.updateStatus(payment.id, {
