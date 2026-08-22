@@ -10,6 +10,9 @@ import { generatePaymentReference } from "../utils/reference";
 import type { InitiatePaymentInput } from "../validators/payment.validator";
 
 const PENDING_PAYMENT_TTL_MS = 30 * 60 * 1000; // 30 minutes
+type PaymentWithRelations = NonNullable<
+  Awaited<ReturnType<typeof paymentRepository.findByReference>>
+>;
 
 export class PaymentService {
   async initiatePayment(input: InitiatePaymentInput) {
@@ -209,69 +212,20 @@ export class PaymentService {
 
     if (payment.status === PaymentStatus.pending) {
       try {
-        const verifyData = await paystackClient.verifyTransaction(reference);
+        await this.reconcilePendingPayment(payment, "status_check");
+      } catch (error) {
+        await paymentRepository.createAuditLog({
+          actorRole: UserRole.organizer,
+          event: "payment.verification_deferred",
+          entityType: "payment",
+          entityId: payment.id,
+          metadata: {
+            reference,
+            message: error instanceof Error ? error.message : "Unknown verification error",
+          },
+        });
 
-        if (verifyData.status === "success") {
-          // const expectedKobo = Math.round(Number(payment.amount) * 100);
-          const expectedTotalKobo = Math.round(Number(payment.amount) * 100);
-
-          // if (verifyData.amount < expectedKobo) 
-          if (verifyData.amount !== expectedTotalKobo) {
-            await paymentRepository.updateStatus(payment.id, {
-              status: PaymentStatus.flagged,
-              failureReason: PaymentFailureReason.amount_mismatch,
-              providerTransactionId: String(verifyData.id),
-              verifiedAt: new Date(),
-            });
-
-            payment.status = PaymentStatus.flagged;
-            payment.failureReason = PaymentFailureReason.amount_mismatch;
-          } else if (
-            verifyData.currency.toUpperCase() !== payment.currency.toUpperCase()
-          ) {
-            await paymentRepository.updateStatus(payment.id, {
-              status: PaymentStatus.flagged,
-              failureReason: PaymentFailureReason.currency_mismatch,
-              providerTransactionId: String(verifyData.id),
-              verifiedAt: new Date(),
-            });
-
-            payment.status = PaymentStatus.flagged;
-            payment.failureReason = PaymentFailureReason.currency_mismatch;
-          } else {
-            await paymentRepository.updateStatus(payment.id, {
-              status: PaymentStatus.successful,
-              providerTransactionId: String(verifyData.id),
-              verifiedAt: verifyData.paid_at ? new Date(verifyData.paid_at) : new Date(),
-            });
-
-            await paymentRepository.createAuditLog({
-              actorRole: UserRole.organizer,
-              event: "payment.completed",
-              entityType: "payment",
-              entityId: payment.id,
-              metadata: {
-                reference,
-                providerTransactionId: verifyData.id,
-                amount: payment.amount,
-              },
-            });
-
-            payment.status = PaymentStatus.successful;
-            payment.providerTransactionId = String(verifyData.id);
-            payment.verifiedAt = verifyData.paid_at ? new Date(verifyData.paid_at) : new Date();
-          }
-        } else if (verifyData.status === "failed") {
-          await paymentRepository.updateStatus(payment.id, {
-            status: PaymentStatus.failed,
-            failureReason: PaymentFailureReason.verification_failed,
-          });
-
-          payment.status = PaymentStatus.failed;
-          payment.failureReason = PaymentFailureReason.verification_failed;
-        }
-      } catch (err) {
-        // If verification fails or throws, return current state
+        throw error;
       }
     }
 
@@ -293,6 +247,125 @@ export class PaymentService {
         matricNumber: payment.student.matricNumber,
       },
     };
+  }
+
+  private async reconcilePendingPayment(
+    payment: PaymentWithRelations,
+    source: "status_check" | "webhook"
+  ) {
+    if (payment.status !== PaymentStatus.pending) {
+      return payment;
+    }
+
+    const verifyData = await paystackClient.verifyTransaction(payment.reference);
+
+    if (verifyData.status === "success") {
+      const expectedAmountInKobo = Math.round(Number(payment.amount) * 100);
+      const verifiedAt = verifyData.paid_at ? new Date(verifyData.paid_at) : new Date();
+
+      if (verifyData.amount !== expectedAmountInKobo) {
+        const updatedPayment = await paymentRepository.updateStatus(payment.id, {
+          status: PaymentStatus.flagged,
+          failureReason: PaymentFailureReason.amount_mismatch,
+          providerTransactionId: String(verifyData.id),
+          verifiedAt,
+        });
+
+        Object.assign(payment, updatedPayment);
+
+        await paymentRepository.createAuditLog({
+          actorRole: UserRole.organizer,
+          event: "payment.flagged",
+          entityType: "payment",
+          entityId: payment.id,
+          metadata: {
+            reason: "amount_mismatch",
+            reference: payment.reference,
+            expectedAmountInKobo,
+            receivedAmountInKobo: verifyData.amount,
+            providerTransactionId: verifyData.id,
+            source,
+          },
+        });
+
+        return payment;
+      }
+
+      if (verifyData.currency.toUpperCase() !== payment.currency.toUpperCase()) {
+        const updatedPayment = await paymentRepository.updateStatus(payment.id, {
+          status: PaymentStatus.flagged,
+          failureReason: PaymentFailureReason.currency_mismatch,
+          providerTransactionId: String(verifyData.id),
+          verifiedAt,
+        });
+
+        Object.assign(payment, updatedPayment);
+
+        await paymentRepository.createAuditLog({
+          actorRole: UserRole.organizer,
+          event: "payment.flagged",
+          entityType: "payment",
+          entityId: payment.id,
+          metadata: {
+            reason: "currency_mismatch",
+            reference: payment.reference,
+            expectedCurrency: payment.currency,
+            receivedCurrency: verifyData.currency,
+            providerTransactionId: verifyData.id,
+            source,
+          },
+        });
+
+        return payment;
+      }
+
+      const updatedPayment = await paymentRepository.updateStatus(payment.id, {
+        status: PaymentStatus.successful,
+        providerTransactionId: String(verifyData.id),
+        verifiedAt,
+      });
+
+      Object.assign(payment, updatedPayment);
+
+      await paymentRepository.createAuditLog({
+        actorRole: UserRole.organizer,
+        event: "payment.completed",
+        entityType: "payment",
+        entityId: payment.id,
+        metadata: {
+          reference: payment.reference,
+          providerTransactionId: verifyData.id,
+          amount: payment.amount,
+          source,
+        },
+      });
+
+      return payment;
+    }
+
+    if (verifyData.status === "failed") {
+      const updatedPayment = await paymentRepository.updateStatus(payment.id, {
+        status: PaymentStatus.failed,
+        failureReason: PaymentFailureReason.verification_failed,
+      });
+
+      Object.assign(payment, updatedPayment);
+
+      await paymentRepository.createAuditLog({
+        actorRole: UserRole.organizer,
+        event: "payment.failed",
+        entityType: "payment",
+        entityId: payment.id,
+        metadata: {
+          reference: payment.reference,
+          providerTransactionId: verifyData.id,
+          providerStatus: verifyData.status,
+          source,
+        },
+      });
+    }
+
+    return payment;
   }
 
   async handlePaystackWebhook(
@@ -340,78 +413,7 @@ export class PaymentService {
 
       // Perform direct API re-verification
       try {
-        const verifyData = await paystackClient.verifyTransaction(reference);
-
-        if (verifyData.status === "success") {
-          // const expectedKobo = Math.round(Number(payment.amount) * 100);
-          const expectedTotalKobo = Math.round(Number(payment.amount) * 100);
-
-          // if (verifyData.amount < expectedKobo) 
-          if (verifyData.amount !== expectedTotalKobo) {
-            await paymentRepository.updateStatus(payment.id, {
-              status: PaymentStatus.flagged,
-              failureReason: PaymentFailureReason.amount_mismatch,
-              providerTransactionId: String(verifyData.id),
-              verifiedAt: new Date(),
-            });
-
-            await paymentRepository.createAuditLog({
-              actorRole: UserRole.organizer,
-              event: "payment.flagged",
-              entityType: "payment",
-              entityId: payment.id,
-              metadata: {
-                reason: "amount_mismatch",
-                expectedAmount: payment.amount,
-                receivedKobo: verifyData.amount,
-              },
-            });
-          } else if (
-            verifyData.currency.toUpperCase() !== payment.currency.toUpperCase()
-          ) {
-            await paymentRepository.updateStatus(payment.id, {
-              status: PaymentStatus.flagged,
-              failureReason: PaymentFailureReason.currency_mismatch,
-              providerTransactionId: String(verifyData.id),
-              verifiedAt: new Date(),
-            });
-
-            await paymentRepository.createAuditLog({
-              actorRole: UserRole.organizer,
-              event: "payment.flagged",
-              entityType: "payment",
-              entityId: payment.id,
-              metadata: {
-                reason: "currency_mismatch",
-                expectedCurrency: payment.currency,
-                receivedCurrency: verifyData.currency,
-              },
-            });
-          } else {
-            await paymentRepository.updateStatus(payment.id, {
-              status: PaymentStatus.successful,
-              providerTransactionId: String(verifyData.id),
-              verifiedAt: verifyData.paid_at ? new Date(verifyData.paid_at) : new Date(),
-            });
-
-            await paymentRepository.createAuditLog({
-              actorRole: UserRole.organizer,
-              event: "payment.completed",
-              entityType: "payment",
-              entityId: payment.id,
-              metadata: {
-                reference,
-                providerTransactionId: verifyData.id,
-                amount: payment.amount,
-              },
-            });
-          }
-        } else {
-          await paymentRepository.updateStatus(payment.id, {
-            status: PaymentStatus.failed,
-            failureReason: PaymentFailureReason.verification_failed,
-          });
-        }
+        await this.reconcilePendingPayment(payment, "webhook");
 
         await paymentRepository.updateWebhookLog(webhookLog.id, {
           processed: true,
