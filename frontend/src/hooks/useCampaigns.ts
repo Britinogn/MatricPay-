@@ -52,7 +52,6 @@ export function useCampaigns(query: CampaignsQuery = {}) {
   });
 }
 
-// (rest of hooks unchanged, but I'll include them for completeness)
 
 export function useCampaign(id: string | undefined) {
   return useQuery({

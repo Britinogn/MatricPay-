@@ -44,3 +44,36 @@ export interface PaymentStatusResponse {
     studentName?: string;
     matricNumber?: string;
 }
+
+//chatgpt
+
+export interface CampaignPaymentStudent {
+  id: string;
+  fullName: string;
+  matricNumber: string;
+  email: string | null;
+  phone: string | null;
+  department: string | null;
+  level: string | null;
+}
+
+export interface CampaignPayment {
+  id: string;
+  reference: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  createdAt: string;
+  verifiedAt: string | null;
+  student: CampaignPaymentStudent;
+}
+
+export interface CampaignPaymentsResponse {
+  payments: CampaignPayment[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
