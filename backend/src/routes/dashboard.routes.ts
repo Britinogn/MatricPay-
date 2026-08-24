@@ -5,19 +5,20 @@ import { asyncHandler } from "../utils/async-handler";
 
 export const dashboardRoutes = Router();
 
-dashboardRoutes.use(authMiddleware);
-
 dashboardRoutes.get(
   "/overview",
+  authMiddleware,
   asyncHandler(dashboardController.getOrganizerOverview.bind(dashboardController))
 );
 
 dashboardRoutes.get(
   "/:id/dashboard",
+  authMiddleware,
   asyncHandler(dashboardController.getCampaignDashboard.bind(dashboardController))
 );
 
 dashboardRoutes.get(
   "/:id/dashboard/timeseries",
+  authMiddleware,
   asyncHandler(dashboardController.getCollectionTimeseries.bind(dashboardController))
 );

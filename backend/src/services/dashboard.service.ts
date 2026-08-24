@@ -81,7 +81,7 @@ export class DashboardService {
     });
 
     const totalCollected = Number(successfulPaymentsSum._sum.amount || 0);
-    const campaignAmount = Number(campaign.amount);
+    const campaignAmount = Number(campaign.netAmount);
 
     // Expected Amount
     const totalExpected =
@@ -119,6 +119,7 @@ export class DashboardService {
         title: campaign.title,
         description: campaign.description,
         amount: campaign.amount,
+        netAmount: campaign.netAmount,
         amountType: campaign.amountType,
         currency: campaign.currency,
         slug: campaign.slug,
@@ -198,6 +199,7 @@ export class DashboardService {
         id: c.id,
         title: c.title,
         amount: c.amount,
+        netAmount: c.netAmount,
         campaignType: c.campaignType,
         status: c.status,
         slug: c.slug,
@@ -237,7 +239,7 @@ export class DashboardService {
     });
 
     const totalStudents = campaign._count.students;
-    const campaignAmount = Number(campaign.amount);
+    const campaignAmount = Number(campaign.netAmount);
     const totalCollected = successfulPayments.reduce(
       (sum, payment) => sum + Number(payment.amount),
       0
