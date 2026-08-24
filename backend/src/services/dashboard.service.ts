@@ -34,10 +34,8 @@ export class DashboardService {
       campaign.expiresAt !== null &&
       campaign.expiresAt.getTime() < Date.now();
 
-    // Student metrics
     const totalStudents = campaign._count.students;
 
-    // Count distinct students with successful payment
     const paidStudentsResult = await prisma.payment.groupBy({
       by: ["studentId"],
       where: {
@@ -48,7 +46,6 @@ export class DashboardService {
     const paidStudents = paidStudentsResult.length;
     const unpaidStudents = Math.max(0, totalStudents - paidStudents);
 
-    // Payments status breakdown
     const paymentStatusCounts = await prisma.payment.groupBy({
       by: ["status"],
       where: { campaignId },
@@ -63,39 +60,31 @@ export class DashboardService {
       failed: 0,
       expired: 0,
       flagged: 0,
+      superseded: 0,
     };
 
     for (const group of paymentStatusCounts) {
       statusMap[group.status] = group._count.status;
     }
 
-    // Collected Amount
-    const successfulPaymentsSum = await prisma.payment.aggregate({
-      where: {
-        campaignId,
-        status: PaymentStatus.successful,
-      },
-      _sum: {
-        amount: true,
-      },
-    });
+    // Organizer metrics use NET (what they set), not gross student charge
+    const netPerStudent = Number(campaign.netAmount);
 
-    const totalCollected = Number(successfulPaymentsSum._sum.amount || 0);
-    const campaignAmount = Number(campaign.netAmount);
-
-    // Expected Amount
     const totalExpected =
-      campaign.campaignType === "restricted"
-        ? totalStudents * campaignAmount
-        : totalCollected;
+      campaign.campaignType === CampaignType.restricted
+        ? totalStudents * netPerStudent
+        : paidStudents * netPerStudent;
 
+    const totalCollected = paidStudents * netPerStudent;
     const outstandingBalance = Math.max(0, totalExpected - totalCollected);
     const collectionPercentage =
       totalExpected > 0
-        ? Math.min(100, Number(((totalCollected / totalExpected) * 100).toFixed(2)))
-        : 100;
+        ? Math.min(
+            100,
+            Number(((totalCollected / totalExpected) * 100).toFixed(2))
+          )
+        : 0;
 
-    // Recent Payments
     const recentPayments = await prisma.payment.findMany({
       where: { campaignId, status: PaymentStatus.successful },
       orderBy: { createdAt: "desc" },
@@ -143,7 +132,7 @@ export class DashboardService {
       recentPayments: recentPayments.map((p) => ({
         id: p.id,
         reference: p.reference,
-        amount: p.amount,
+        amount: p.amount, // gross — what student paid
         currency: p.currency,
         status: p.status,
         failureReason: p.failureReason,
@@ -155,7 +144,6 @@ export class DashboardService {
   }
 
   async getOrganizerOverview(user: AuthUser) {
-    // Only organizers (or admins acting as organizers) can query personal overview
     const campaigns = await prisma.campaign.findMany({
       where: { organizerId: user.id },
       include: {
@@ -170,23 +158,35 @@ export class DashboardService {
     });
 
     const totalCampaigns = campaigns.length;
-    const activeCampaigns = campaigns.filter((c) => c.status === CampaignStatus.active).length;
+    const activeCampaigns = campaigns.filter(
+      (c) => c.status === CampaignStatus.active
+    ).length;
 
-    // Aggregate funds collected across all owned campaigns
-    const successfulPaymentsSum = await prisma.payment.aggregate({
+    const paidByCampaign = await prisma.payment.groupBy({
+      by: ["campaignId", "studentId"],
       where: {
         campaign: { organizerId: user.id },
         status: PaymentStatus.successful,
       },
-      _sum: {
-        amount: true,
-      },
     });
 
-    const totalCollected = Number(successfulPaymentsSum._sum.amount || 0);
+    const paidCountByCampaignId = new Map<string, number>();
+    for (const row of paidByCampaign) {
+      paidCountByCampaignId.set(
+        row.campaignId,
+        (paidCountByCampaignId.get(row.campaignId) || 0) + 1
+      );
+    }
 
-    // Count total students across all owned campaigns
-    const totalStudentsSum = campaigns.reduce((acc, c) => acc + c._count.students, 0);
+    const totalCollected = campaigns.reduce((sum, c) => {
+      const paid = paidCountByCampaignId.get(c.id) || 0;
+      return sum + paid * Number(c.netAmount);
+    }, 0);
+
+    const totalStudentsSum = campaigns.reduce(
+      (acc, c) => acc + c._count.students,
+      0
+    );
 
     return {
       overview: {
@@ -210,12 +210,6 @@ export class DashboardService {
     };
   }
 
-  /**
-   * Day-by-day cumulative "amount collected" for the Collection Progress
-   * chart, computed directly from successful payments — not estimated or
-   * interpolated. One point per UTC calendar day, from the campaign's
-   * creation date through today.
-   */
   async getCampaignCollectionTimeseries(user: AuthUser, campaignId: string) {
     const campaign = await prisma.campaign.findUnique({
       where: { id: campaignId },
@@ -232,24 +226,21 @@ export class DashboardService {
       throw new HttpError(404, "Campaign not found");
     }
 
+    const netPerStudent = Number(campaign.netAmount);
+
     const successfulPayments = await prisma.payment.findMany({
       where: { campaignId, status: PaymentStatus.successful },
-      select: { amount: true, verifiedAt: true, createdAt: true },
+      select: { verifiedAt: true, createdAt: true },
       orderBy: { createdAt: "asc" },
     });
 
     const totalStudents = campaign._count.students;
-    const campaignAmount = Number(campaign.netAmount);
-    const totalCollected = successfulPayments.reduce(
-      (sum, payment) => sum + Number(payment.amount),
-      0
-    );
+    const paidStudents = successfulPayments.length;
+    const totalCollected = paidStudents * netPerStudent;
 
-    // Same target logic as getCampaignDashboard's totalExpected, kept in
-    // sync deliberately rather than re-derived a different way.
     const target =
       campaign.campaignType === CampaignType.restricted
-        ? totalStudents * campaignAmount
+        ? totalStudents * netPerStudent
         : totalCollected;
 
     const dayMs = 24 * 60 * 60 * 1000;
@@ -259,22 +250,27 @@ export class DashboardService {
       campaign.createdAt.getUTCDate()
     );
     const now = new Date();
-    const endDay = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const endDay = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
+    );
 
     const series: { date: string; cumulativeAmount: number }[] = [];
     let runningTotal = 0;
     let paymentIndex = 0;
 
     for (let day = startDay; day <= endDay; day += dayMs) {
-      const dayEnd = day + dayMs; // exclusive upper bound for "this day"
+      const dayEnd = day + dayMs;
 
       while (
         paymentIndex < successfulPayments.length &&
-        (successfulPayments[paymentIndex].verifiedAt ??
+        (
+          successfulPayments[paymentIndex].verifiedAt ??
           successfulPayments[paymentIndex].createdAt
         ).getTime() < dayEnd
       ) {
-        runningTotal += Number(successfulPayments[paymentIndex].amount);
+        runningTotal += netPerStudent;
         paymentIndex += 1;
       }
 
