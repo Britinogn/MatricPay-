@@ -2,10 +2,12 @@ import { Campaign, CampaignStatus, CampaignType, Prisma, UserRole } from "@prism
 import { env } from "../config/env";
 import { campaignRepository } from "../repositories/campaign.repository";
 import { userRepository } from "../repositories/user.repository";
+import {paymentRepository} from "../repositories/payment.repository";
 import { HttpError } from "../utils/http-error";
 import { generateCampaignSlug } from "../utils/slug";
 import type {
   CampaignListQueryInput,
+  CampaignPaymentsQueryInput,
   CreateCampaignInput,
   UpdateCampaignInput,
   UpdateCampaignStatusInput,
@@ -336,6 +338,22 @@ export class CampaignService {
       success: true,
       deletedCount: campaigns.length,
     };
+  }
+
+  async listCampaignPayments(
+    user: AuthUser,
+    campaignId: string,
+    query: CampaignPaymentsQueryInput
+  ) {
+    const campaign = await this.getOwnedCampaign(user, campaignId);
+  
+    return paymentRepository.listByCampaign({
+      campaignId: campaign.id,
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.search ? { search: query.search } : {}),
+      page: query.page,
+      limit: query.limit,
+    });
   }
 
 }

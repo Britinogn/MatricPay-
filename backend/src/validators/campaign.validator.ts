@@ -101,6 +101,24 @@ export const BulkDeleteCampaignsSchema = z.object({
     .min(1, { message: "At least one campaign ID is required" }),
 });
 
+export const CampaignPaymentsQuerySchema = z.object({
+  status: z
+    .enum([
+      "successful",
+      "pending",
+      "flagged",
+      "superseded",
+      "failed",
+      "expired",
+    ])
+    .optional(),
+
+  search: z.string().trim().min(1).max(120).optional(),
+
+  page: z.coerce.number().int().positive().default(1),
+
+  limit: z.coerce.number().int().positive().max(100).default(25),
+});
 
 export type CreateCampaignInput = z.infer<typeof CreateCampaignSchema>;
 export type UpdateCampaignInput = z.infer<typeof UpdateCampaignSchema>;
@@ -109,3 +127,6 @@ export type CampaignSlugParamInput = z.infer<typeof CampaignSlugParamSchema>;
 export type UpdateCampaignStatusInput = z.infer<typeof UpdateCampaignStatusSchema>;
 export type CampaignListQueryInput = z.infer<typeof CampaignListQuerySchema>;
 export type BulkDeleteCampaignsInput = z.infer<typeof BulkDeleteCampaignsSchema>;
+export type CampaignPaymentsQueryInput = z.infer<
+  typeof CampaignPaymentsQuerySchema
+>;

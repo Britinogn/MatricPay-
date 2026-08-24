@@ -9,6 +9,7 @@ import {
   UpdateCampaignSchema,
   UpdateCampaignStatusSchema,
   BulkDeleteCampaignsSchema,
+  CampaignPaymentsQuerySchema,
 } from "../validators/campaign.validator";
 
 function requireAuthenticatedUser(request: Request) {
@@ -92,6 +93,20 @@ export class CampaignController {
     const { campaignIds } = BulkDeleteCampaignsSchema.parse(request.body);
     const result = await campaignService.bulkDeleteCampaigns(user, campaignIds);
 
+    response.status(200).json(result);
+  }
+
+  async listPayments(request: Request, response: Response): Promise<void> {
+    const user = requireAuthenticatedUser(request);
+    const { id } = CampaignIdParamSchema.parse(request.params);
+    const query = CampaignPaymentsQuerySchema.parse(request.query);
+  
+    const result = await campaignService.listCampaignPayments(
+      user,
+      id,
+      query
+    );
+  
     response.status(200).json(result);
   }
 

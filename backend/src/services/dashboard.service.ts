@@ -97,9 +97,9 @@ export class DashboardService {
 
     // Recent Payments
     const recentPayments = await prisma.payment.findMany({
-      where: { campaignId },
+      where: { campaignId, status: PaymentStatus.successful },
       orderBy: { createdAt: "desc" },
-      take: 15,
+      take: 5,
       include: {
         student: {
           select: {

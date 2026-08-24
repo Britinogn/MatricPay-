@@ -287,6 +287,98 @@ export class PaymentRepository {
       data: updateData,
     });
   }
+
+  async listByCampaign({
+    campaignId,
+    status,
+    search,
+    page,
+    limit,
+  }: {
+    campaignId: string;
+    status?: PaymentStatus;
+    search?: string;
+    page: number;
+    limit: number;
+  }) {
+    const where: Prisma.PaymentWhereInput = {
+      campaignId,
+      ...(status ? { status } : {}),
+      ...(search
+        ? {
+            student: {
+              OR: [
+                {
+                  fullName: {
+                    contains: search,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  matricNumber: {
+                    contains: search,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  email: {
+                    contains: search,
+                    mode: "insensitive",
+                  },
+                },
+              ],
+            },
+          }
+        : {}),
+    };
+  
+    const skip = (page - 1) * limit;
+  
+    const orderBy =
+      status === PaymentStatus.successful
+        ? {
+            student: {
+              fullName: "asc" as const,
+            },
+          }
+        : {
+            createdAt: "desc" as const,
+          };
+  
+    const [payments, total] = await prisma.$transaction([
+      prisma.payment.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        include: {
+          student: {
+            select: {
+              id: true,
+              fullName: true,
+              matricNumber: true,
+              email: true,
+              phone: true,
+              department: true,
+              level: true,
+            },
+          },
+        },
+      }),
+  
+      prisma.payment.count({
+        where,
+      }),
+    ]);
+  
+    return {
+      payments,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
 }
 
 export const paymentRepository = new PaymentRepository();

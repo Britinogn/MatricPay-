@@ -15,6 +15,12 @@ campaignRoutes.use(authMiddleware);
 campaignRoutes.post("/", asyncHandler(campaignController.create.bind(campaignController)));
 campaignRoutes.get("/", asyncHandler(campaignController.list.bind(campaignController)));
 campaignRoutes.get("/:id", asyncHandler(campaignController.getById.bind(campaignController)));
+
+campaignRoutes.get(
+  "/:id/payments",
+  asyncHandler(campaignController.listPayments.bind(campaignController))
+);
+
 campaignRoutes.patch("/:id", asyncHandler(campaignController.update.bind(campaignController)));
 campaignRoutes.patch(
   "/:id/status",
