@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { HttpError } from "../utils/http-error";
 import { campaignService } from "../services/campaign.service";
+import {campaignExportService} from "../services/campaign-export.service"
 import {
   CampaignIdParamSchema,
   CampaignListQuerySchema,
@@ -108,6 +109,32 @@ export class CampaignController {
     );
   
     response.status(200).json(result);
+  }
+
+  async exportPaymentsCsv(request: Request, response: Response): Promise<void> {
+    const user = requireAuthenticatedUser(request);
+    const { id } = CampaignIdParamSchema.parse(request.params);
+    const result = await campaignExportService.exportCsv(user, id);
+  
+    response.setHeader("Content-Type", result.contentType);
+    response.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${result.filename}"`
+    );
+    response.status(200).send(result.body);
+  }
+  
+  async exportPaymentsPdf(request: Request, response: Response): Promise<void> {
+    const user = requireAuthenticatedUser(request);
+    const { id } = CampaignIdParamSchema.parse(request.params);
+    const result = await campaignExportService.exportPdf(user, id);
+  
+    response.setHeader("Content-Type", result.contentType);
+    response.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${result.filename}"`
+    );
+    response.status(200).send(result.buffer);
   }
 
 }

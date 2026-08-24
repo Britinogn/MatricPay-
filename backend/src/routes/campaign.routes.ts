@@ -21,6 +21,16 @@ campaignRoutes.get(
   asyncHandler(campaignController.listPayments.bind(campaignController))
 );
 
+campaignRoutes.get(
+  "/:id/payments/export/csv",
+  asyncHandler(campaignController.exportPaymentsCsv.bind(campaignController))
+);
+
+campaignRoutes.get(
+  "/:id/payments/export/pdf",
+  asyncHandler(campaignController.exportPaymentsPdf.bind(campaignController))
+);
+
 campaignRoutes.patch("/:id", asyncHandler(campaignController.update.bind(campaignController)));
 campaignRoutes.patch(
   "/:id/status",

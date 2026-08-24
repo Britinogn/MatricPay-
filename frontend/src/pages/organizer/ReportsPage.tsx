@@ -1,15 +1,14 @@
 import { Link } from "react-router-dom";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ViewIcon } from "@hugeicons/core-free-icons";
 import { useCampaigns } from "../../hooks/useCampaigns";
 import { ListSkeleton, ErrorState } from "../../components/ui";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { EyeIcon } from "@hugeicons/core-free-icons";
 
-export default function PaymentsPage() {
+export default function ReportsPage() {
   const { data, isLoading, isError, refetch } = useCampaigns({
     page: 1,
     limit: 50,
   });
-
   const campaigns = data?.campaigns ?? [];
 
   return (
@@ -19,10 +18,10 @@ export default function PaymentsPage() {
           className="text-2xl font-semibold text-(--text-primary)"
           style={{ fontFamily: "var(--font-display)" }}
         >
-          Payments
+          Reports
         </h1>
         <p className="mt-1 text-sm text-(--text-muted)">
-          View student payments by campaign
+          Export paid students for each campaign
         </p>
       </div>
 
@@ -31,18 +30,12 @@ export default function PaymentsPage() {
       ) : isError ? (
         <ErrorState
           title="Couldn’t load campaigns"
-          message="Please check your connection and try again."
+          message="Please try again."
           onRetry={() => refetch()}
         />
       ) : campaigns.length === 0 ? (
-        <div className="rounded-2xl border border-(--border) bg-(--surface) px-4 py-10 text-center">
-          <p className="text-sm text-(--text-muted)">No campaigns yet.</p>
-          <Link
-            to="/dashboard/campaigns/new"
-            className="mt-3 inline-block text-sm font-medium text-(--primary)"
-          >
-            Create a campaign
-          </Link>
+        <div className="rounded-2xl border border-(--border) bg-(--surface) px-4 py-10 text-center text-sm text-(--text-muted)">
+          No campaigns yet.
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-(--border) bg-(--surface)">
@@ -58,17 +51,14 @@ export default function PaymentsPage() {
                   </p>
                   <p className="mt-0.5 text-xs capitalize text-(--text-muted)">
                     {campaign.status}
-                    {campaign.campaignType ? ` · ${campaign.campaignType}` : ""}
                   </p>
                 </div>
-
                 <Link
-                  to={`/dashboard/payments/${campaign.id}`}
-                  className="shrink-0 rounded-xl border border-(--border) px-3 py-1.5 text-sm font-medium text-(--text-primary) transition hover:bg-(--background)"
+                  to={`/dashboard/reports/${campaign.id}`}
+                  title="View report"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-(--border) text-(--text-muted) hover:bg-(--background) hover:text-(--text-primary)"
                 >
-                  <span className="left-3 top-1/2 -translate-y-1/2 text-(--text-muted)">
-                    <HugeiconsIcon icon={EyeIcon} size={16} />
-                  </span>
+                  <HugeiconsIcon icon={ViewIcon} size={18} />
                 </Link>
               </div>
             ))}

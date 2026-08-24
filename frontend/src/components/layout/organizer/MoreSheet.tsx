@@ -21,7 +21,7 @@ interface MoreSheetProps {
 
 const accountItems = [
   { label: "Payouts", icon: CreditCardIcon, to: "/dashboard/payout-account", available: true },
-  { label: "Reports", icon: ChartIcon, to: null, available: false },
+  { label: "Reports", icon: ChartIcon, to: "/dashboard/reports", available: true },
   { label: "Settings", icon: Settings01Icon, to: null, available: false },
 ];
 

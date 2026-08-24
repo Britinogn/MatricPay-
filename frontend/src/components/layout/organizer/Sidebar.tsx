@@ -17,11 +17,12 @@ const mainItems = [
   { label: "Home", to: "/dashboard/overview", icon: DashboardSquare01Icon, available: true },
   { label: "Campaigns", to: "/dashboard/campaigns", icon: Megaphone01Icon, available: true },
   { label: "Payments", to: "/dashboard/payments", icon: Money01Icon, available: true },
+  // { label: "Reports", to: "/dashboard/reports", icon: ChartIcon, available: true },
 ];
 
 const accountItems = [
   { label: "Payouts", to: "/dashboard/payout-account", icon: CreditCardIcon, available: true },
-  { label: "Reports", to: null, icon: ChartIcon, available: false },
+  { label: "Reports", to: "/dashboard/reports", icon: ChartIcon, available: true },
   { label: "Settings", to: null, icon: Settings01Icon, available: false },
 ];
 
