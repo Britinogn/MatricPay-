@@ -37,7 +37,7 @@ export function ActiveCampaignCard({ campaign }: ActiveCampaignCardProps) {
           <div>
             <p className="opacity-70 text-xs mb-0.5">Target Amount</p>
             <p className="font-mono font-semibold text-base">
-              {formatCompactNaira(campaign.amount, campaign.currency)}
+              {formatCompactNaira(campaign.netAmount, campaign.currency)}
             </p>
           </div>
 

@@ -6,7 +6,7 @@ export interface Campaign {
     title: string;
     description: string | null;
     amount: string | number; // gross student-facing amount
-    netAmount?: string | number | null; // organizer net amount
+    netAmount: string | number; // organizer net amount
     amountType: AmountType;
     currency: string;
     slug: string;
@@ -34,6 +34,7 @@ export interface OverviewCampaign {
   id: string;
   title: string;
   amount: number;
+  netAmount: number;
   campaignType: string;
   status: string;
   slug: string;

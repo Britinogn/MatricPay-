@@ -55,7 +55,7 @@ export function CampaignsSection({ campaigns }: CampaignsSectionProps) {
               </div>
               <div className="flex shrink-0 items-center gap-3">
                 <span className="text-sm font-medium text-(--text-primary)">
-                  {formatCompactNaira(Number(campaign.amount) || 0)}
+                  {formatCompactNaira(Number(campaign.netAmount) || 0)}
                 </span>
                 <StatusBadge status={campaign.status} />
               </div>

@@ -32,7 +32,7 @@ export function ActiveCampaignSummaryCard({ campaign, metrics, onShare }: Active
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-xs text-white/70">Target Amount</p>
-            <p className="mt-0.5 font-semibold">{formatCompactNaira(Number(campaign.amount) || 0)}</p>
+            <p className="mt-0.5 font-semibold">{formatCompactNaira(Number(campaign.netAmount) || 0)}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-white/70">Collected</p>

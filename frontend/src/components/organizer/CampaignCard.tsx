@@ -15,7 +15,8 @@ interface CampaignCardProps {
   campaign: {
     id: string;
     title: string;
-    amount: string | number;
+    // amount: string | number;
+    netAmount?: string | number | null;
     status: string;
     studentCount?: number;
     paymentCount?: number;
@@ -58,7 +59,7 @@ export function CampaignCard({
 
               <div className="hidden sm:flex sm:items-center sm:gap-3 sm:shrink-0">
                 <span className="text-sm font-medium text-(--text-primary)">
-                  {formatNaira(Number(campaign.amount) || 0)}
+                  {formatNaira(Number(campaign.netAmount) || 0)}
                 </span>
                 <StatusBadge status={campaign.status} />
               </div>
@@ -73,7 +74,7 @@ export function CampaignCard({
 
               <div className="flex items-center gap-2 sm:hidden">
                 <span className="text-sm font-semibold text-(--text-primary)">
-                  {formatNaira(Number(campaign.amount) || 0)}
+                  {formatNaira(Number(campaign.netAmount) || 0)}
                 </span>
                 <StatusBadge status={campaign.status} />
               </div>

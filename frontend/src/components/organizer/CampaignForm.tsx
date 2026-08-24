@@ -7,6 +7,9 @@ const campaignSchema = z
   .object({
     title: z.string().min(3, "Title must be at least 3 characters").max(120),
     description: z.string().max(1000).optional().or(z.literal("")),
+    // amount: z
+    //   .number()
+    //   .positive("Amount must be greater than zero"),
     netAmount: z
       .number()
       .positive("Amount must be greater than zero"),
