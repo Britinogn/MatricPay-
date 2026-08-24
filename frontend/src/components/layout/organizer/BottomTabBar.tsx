@@ -12,7 +12,8 @@ import MoreSheet from "./MoreSheet";
 const tabs = [
   { label: "Home", to: "/dashboard/overview", icon: Home01Icon },
   { label: "Campaigns", to: "/dashboard/campaigns", icon: Megaphone01Icon },
-  { label: "Payouts", to: "/dashboard/payout-account", icon: CreditCardIcon },
+  { label: "Payments", to: "/dashboard/payments", icon: CreditCardIcon },
+  // { label: "Payouts", to: "/dashboard/payout-account", icon: CreditCardIcon },
 ];
 
 export default function BottomTabBar() {

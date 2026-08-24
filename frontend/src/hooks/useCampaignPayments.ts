@@ -1,30 +1,52 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import type { ApiEnvelope } from "../types/api";
-import type { CampaignPaymentsResponse } from "../types/payment";
+import type { CampaignPayment, CampaignPaymentsResult, PaymentStatus } from "../types";
 
-interface CampaignPaymentsParams {
-  status?: string;
+export type CampaignPaymentsQuery = {
+  status?: PaymentStatus;
   search?: string;
   page?: number;
   limit?: number;
-}
+};
 
 export function useCampaignPayments(
   campaignId: string | undefined,
-  params: CampaignPaymentsParams
+  query: CampaignPaymentsQuery = {}
 ) {
-  return useQuery({
-    queryKey: ["campaign-payments", campaignId, params],
-    queryFn: async () => {
-      const { data } = await api.get<ApiEnvelope<CampaignPaymentsResponse>>(
-        `/campaigns/${campaignId}/payments`,
-        {
-          params,
-        }
-      );
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 25;
+  const search = query.search?.trim() || undefined;
+  // Default: successful (your product rule)
+  const status = query.status ?? "successful";
 
-      return data.data;
+  return useQuery({
+    queryKey: ["campaigns", campaignId, "payments", { page, limit, search, status }],
+    queryFn: async (): Promise<CampaignPaymentsResult> => {
+      const res = await api.get(`/campaigns/${campaignId}/payments`, {
+        params: {
+          page,
+          limit,
+          status,
+          ...(search ? { search } : {}),
+        },
+      });
+
+      const payload = res.data.data ?? res.data;
+      const payments = (payload.payments ?? []) as CampaignPayment[];
+
+      const total = payload.total ?? payments.length;
+      const resolvedPage = payload.page ?? page;
+      const resolvedLimit = payload.limit ?? limit;
+      const totalPages =
+        payload.totalPages ?? Math.max(1, Math.ceil(total / resolvedLimit));
+
+      return {
+        payments: Array.isArray(payments) ? payments : [],
+        total,
+        page: resolvedPage,
+        limit: resolvedLimit,
+        totalPages,
+      };
     },
     enabled: !!campaignId,
   });

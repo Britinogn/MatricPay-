@@ -54,7 +54,10 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
   return (
     <div className="space-y-4">
       {!student ? (
-        <form onSubmit={handleValidate} className="space-y-4 rounded-2xl border border-(--border) bg-(--surface) p-5">
+        <form
+          onSubmit={handleValidate}
+          className="space-y-5 rounded-2xl border border-(--border) bg-(--surface) p-5 sm:p-6"
+        >
           <div>
             <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
               Matric number
@@ -62,47 +65,57 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
             <input
               value={matricNumber}
               onChange={(e) => setMatricNumber(e.target.value)}
-              className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+              className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm text-(--text-primary) outline-none transition focus:border-(--primary) focus:ring-1 focus:ring-(--primary)"
               placeholder="e.g. FCP/CSC/20/1001"
               required
             />
           </div>
+
           <button
             type="submit"
             disabled={validateStudent.isPending}
-            className="w-full rounded-xl bg-(--primary) py-2.5 text-sm font-medium text-white hover:bg-(--primary-hover) disabled:opacity-60"
+            className="w-full rounded-xl bg-(--primary) py-2.5 text-sm font-medium text-white transition hover:bg-(--primary-hover) disabled:cursor-not-allowed disabled:opacity-60"
           >
             {validateStudent.isPending ? "Checking..." : "Continue"}
           </button>
         </form>
       ) : (
-        <div className="space-y-4 rounded-2xl border border-(--border) bg-(--surface) p-5">
-          <div>
+        <div className="space-y-5 rounded-2xl border border-(--border) bg-(--surface) p-5 sm:p-6">
+          {/* Student details */}
+          <div className="rounded-xl bg-(--background) px-4 py-3">
             <p className="text-xs text-(--text-muted)">Student</p>
-            <p className="text-base font-semibold text-(--text-primary)">{student.fullName}</p>
+            <p className="mt-0.5 text-base font-semibold text-(--text-primary)">
+              {student.fullName}
+            </p>
             <p className="text-sm text-(--text-muted)">{student.matricNumber}</p>
           </div>
-          <div>
+
+          {/* Amount */}
+          <div className="rounded-xl bg-(--background) px-4 py-3">
             <p className="text-xs text-(--text-muted)">Amount</p>
-            <p className="text-lg font-semibold text-(--primary)">
+            <p className="mt-0.5 text-lg font-semibold text-(--primary)">
               {formatNaira(Number(campaign.amount) || 0, campaign.currency)}
             </p>
           </div>
+
+          {/* Pay button */}
           <button
             type="button"
             onClick={handlePay}
             disabled={initiatePayment.isPending}
-            className="w-full rounded-xl bg-(--primary) py-2.5 text-sm font-medium text-white hover:bg-(--primary-hover) disabled:opacity-60"
+            className="w-full rounded-xl bg-(--primary) py-2.5 text-sm font-medium text-white transition hover:bg-(--primary-hover) disabled:cursor-not-allowed disabled:opacity-60"
           >
             {initiatePayment.isPending ? "Redirecting..." : "Pay with Paystack"}
           </button>
+
+          {/* Change matric number */}
           <button
             type="button"
             onClick={() => {
               paymentAttemptKeyRef.current = null;
               setStudent(null);
             }}
-            className="w-full text-sm text-(--text-muted) hover:text-(--text-primary)"
+            className="w-full text-sm text-(--text-muted) transition hover:text-(--text-primary)"
           >
             Use a different matric number
           </button>

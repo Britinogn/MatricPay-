@@ -4,6 +4,7 @@ import {
   DashboardSquare01Icon,
   Megaphone01Icon,
   CreditCardIcon,
+  Money01Icon, // or Invoice01Icon / Payment01Icon 
   ChartIcon,
   Settings01Icon,
   HelpCircleIcon,
@@ -15,6 +16,7 @@ import {
 const mainItems = [
   { label: "Home", to: "/dashboard/overview", icon: DashboardSquare01Icon, available: true },
   { label: "Campaigns", to: "/dashboard/campaigns", icon: Megaphone01Icon, available: true },
+  { label: "Payments", to: "/dashboard/payments", icon: Money01Icon, available: true },
 ];
 
 const accountItems = [

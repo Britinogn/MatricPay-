@@ -54,43 +54,60 @@ export function OpenPaymentForm({ campaign }: { campaign: PublicCampaign }) {
   };
 
   return (
-    <form onSubmit={handlePay} className="space-y-4 rounded-2xl border border-(--border) bg-(--surface) p-5">
+    <form
+      onSubmit={handlePay}
+      className="space-y-5 rounded-2xl border border-(--border) bg-(--surface) p-5 sm:p-6"
+    >
+      {/* Full name */}
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">Full name</label>
+        <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
+          Full name
+        </label>
         <input
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           required
-          className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+          placeholder="e.g. Jane Doe"
+          className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm text-(--text-primary) outline-none transition focus:border-(--primary) focus:ring-1 focus:ring-(--primary)"
         />
       </div>
 
+      {/* Matric number */}
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">Matric number</label>
+        <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
+          Matric number
+        </label>
         <input
           value={matricNumber}
           onChange={(e) => setMatricNumber(e.target.value)}
           required
-          className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+          placeholder="e.g. FCP/CSC/20/1001"
+          className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm text-(--text-primary) outline-none transition focus:border-(--primary) focus:ring-1 focus:ring-(--primary)"
         />
       </div>
 
+      {/* Email (optional) */}
       <div>
         <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
-          Email <span className="text-(--text-muted)">(optional)</span>
+          Email <span className="text-(--text-muted)"></span>
         </label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+          placeholder="you@example.com"
+          className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm text-(--text-primary) outline-none transition focus:border-(--primary) focus:ring-1 focus:ring-(--primary)"
         />
       </div>
 
+      {/* Amount */}
       {isMinimum ? (
         <div>
           <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
-            Amount (min {formatNaira(minAmount, campaign.currency)})
+            Amount{" "}
+            <span className="text-(--text-muted)">
+              (min {formatNaira(minAmount, campaign.currency)})
+            </span>
           </label>
           <input
             type="number"
@@ -99,11 +116,11 @@ export function OpenPaymentForm({ campaign }: { campaign: PublicCampaign }) {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
-            className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm outline-none focus:border-(--primary)"
+            className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm text-(--text-primary) outline-none transition focus:border-(--primary) focus:ring-1 focus:ring-(--primary)"
           />
         </div>
       ) : (
-        <div>
+        <div className="rounded-xl bg-(--background) px-4 py-3">
           <p className="text-xs text-(--text-muted)">Amount</p>
           <p className="text-lg font-semibold text-(--primary)">
             {formatNaira(minAmount, campaign.currency)}
@@ -111,10 +128,11 @@ export function OpenPaymentForm({ campaign }: { campaign: PublicCampaign }) {
         </div>
       )}
 
+      {/* Submit */}
       <button
         type="submit"
         disabled={initiatePayment.isPending}
-        className="w-full rounded-xl bg-(--primary) py-2.5 text-sm font-medium text-white hover:bg-(--primary-hover) disabled:opacity-60"
+        className="w-full rounded-xl bg-(--primary) py-2.5 text-sm font-medium text-white transition hover:bg-(--primary-hover) disabled:cursor-not-allowed disabled:opacity-60"
       >
         {initiatePayment.isPending ? "Redirecting..." : "Pay with Paystack"}
       </button>
