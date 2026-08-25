@@ -47,6 +47,11 @@ export class PaymentService {
         throw new HttpError(404, "Student not found in restricted list for this campaign");
       }
 
+      const checkoutEmail = input.email?.trim().toLowerCase();
+      if (!checkoutEmail) {
+        throw new HttpError(400, "Email is required to complete payment");
+      }
+
       targetAmount = Number(campaign.amount);
     } else {
       // Open campaign
@@ -175,8 +180,20 @@ export class PaymentService {
       );
     }
 
+    const paystackEmail =
+      input.email?.trim().toLowerCase() ||
+      student.email?.trim().toLowerCase() ||
+      null;
+
+    if (!paystackEmail) {
+      throw new HttpError(400, "Email is required to complete payment");
+    }
+
+    const platformFeeKobo = Math.round(amountInKobo * 0.02);
+
     const initPayload: any = {
-      email: student.email || `student.${student.matricNumber.toLowerCase()}@matricpay.internal`,
+      // email: student.email || `student.${student.matricNumber.toLowerCase()}@matricpay.internal`,
+      email: paystackEmail,
       amount: amountInKobo,
       reference,
       callback_url: callbackUrl,
@@ -188,6 +205,7 @@ export class PaymentService {
       },
       subaccount: organizer.paystackSubaccountCode,
       bearer: "subaccount", // Organizer bears Paystack's processing fee
+      transaction_charge: platformFeeKobo,
       // transaction_charge: Math.round(amountInKobo * 0.02), // 2% platform fee, flat kobo amount
       // transaction_charge: transactionChargeKobo,
     };

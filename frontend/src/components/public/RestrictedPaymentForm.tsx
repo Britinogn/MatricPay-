@@ -13,6 +13,7 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
   const initiatePayment = useInitiatePayment();
 
   const [matricNumber, setMatricNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [student, setStudent] = useState<ValidatedStudent | null>(null);
   const paymentAttemptKeyRef = useRef<string | null>(null);
 
@@ -41,6 +42,7 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
       const result = await initiatePayment.mutateAsync({
         slug: campaign.slug,
         matricNumber: student.matricNumber,
+        email: email.trim(),
         idempotencyKey,
       });
       window.location.href = result.authorizationUrl;
@@ -69,6 +71,22 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
               placeholder="e.g. FCP/CSC/20/1001"
               required
             />
+
+            <label className="mb-1.5 block text-sm font-medium text-(--text-primary)">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="you@example.com"
+              className="w-full rounded-xl border border-(--border) bg-(--background) px-4 py-2.5 text-sm text-(--text-primary) outline-none transition focus:border-(--primary) focus:ring-1 focus:ring-(--primary)"
+            />
+            <p className="mt-1.5 text-xs text-(--text-muted)">
+              Used only for this Paystack checkout. It is not saved on your student record.
+            </p>
+
           </div>
 
           <button
@@ -102,7 +120,8 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
           <button
             type="button"
             onClick={handlePay}
-            disabled={initiatePayment.isPending}
+            // disabled={initiatePayment.isPending}
+            disabled={initiatePayment.isPending || !email.trim()}
             className="w-full rounded-xl bg-(--primary) py-2.5 text-sm font-medium text-white transition hover:bg-(--primary-hover) disabled:cursor-not-allowed disabled:opacity-60"
           >
             {initiatePayment.isPending ? "Redirecting..." : "Pay with Paystack"}
@@ -114,6 +133,7 @@ export function RestrictedPaymentForm({ campaign }: { campaign: PublicCampaign }
             onClick={() => {
               paymentAttemptKeyRef.current = null;
               setStudent(null);
+              setEmail("");
             }}
             className="w-full text-sm text-(--text-muted) transition hover:text-(--text-primary)"
           >
