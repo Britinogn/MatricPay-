@@ -7,4 +7,7 @@ export * from "./payoutAccount";
 export * from "./admin";
 export * from "./api";
 export * from "./dashboard"
-// export * from "./payment"
+
+
+//admin
+export * from "./admin";

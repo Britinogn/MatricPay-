@@ -36,7 +36,12 @@ import PublicPaymentPage from "./pages/public/PublicPaymentPage";
 import PaymentSuccessPage from "./pages/public/PaymentSuccessPage";
 
 // Admin
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+// import AdminDashboardPage from "./pages/admin/AdminOverviewPage";
+import AdminLayout from "./layouts/AdminLayout/AdminLayout";
+import AdminOverviewPage from "./pages/admin/AdminOverviewPage";
+import AdminOrganizersPage from "./pages/admin/AdminOrganizersPage";
+import AdminCampaignsPage from "./pages/admin/AdminCampaignsPage";
+
 
 //not found
 import NotFoundPage from "./pages/NotFoundPage";
@@ -86,7 +91,12 @@ function App() {
 
           {/* Admin — requires auth + admin role */}
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<AdminOverviewPage />} />
+              <Route path="organizers" element={<AdminOrganizersPage />} />
+              <Route path="campaigns" element={<AdminCampaignsPage />} />
+            </Route>
           </Route>
 
           {/* inside <Routes>, as the LAST route: */}
