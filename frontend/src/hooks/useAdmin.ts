@@ -8,6 +8,34 @@ import type {
   UserStatus,
 } from "../types";
 
+export interface AdminAuditLogRow {
+  id: string;
+  event: string;
+  entityType: string;
+  entityId: string;
+  actorRole: string;
+  metadata: Record<string, unknown> | null;
+  ipAddress: string | null;
+  createdAt: string;
+  actor: { id: string; fullName: string; email: string } | null;
+}
+
+export interface AdminWebhookLogRow {
+  id: string;
+  provider: string;
+  eventType: string;
+  reference: string | null;
+  processed: boolean;
+  attempts: number;
+  lastError: string | null;
+  receivedAt: string;
+  processedAt: string | null;
+}
+
+export interface AdminWebhookLogDetail extends AdminWebhookLogRow {
+  payload: unknown;
+}
+
 export function useAdminDashboard() {
   return useQuery({
     queryKey: ["admin", "dashboard"],
@@ -124,5 +152,72 @@ export function useAdminForceCloseCampaign() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin"] });
     },
+  });
+}
+
+export function useAdminAuditLogs(query: {
+  page?: number;
+  limit?: number;
+  search?: string;
+} = {}) {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 25;
+  const search = query.search?.trim() || undefined;
+
+  return useQuery({
+    queryKey: ["admin", "audit-logs", { page, limit, search }],
+    queryFn: async () => {
+      const res = await api.get("/admin/audit-logs", {
+        params: { page, limit, ...(search ? { search } : {}) },
+      });
+      const payload = res.data.data ?? res.data;
+      return {
+        logs: (payload.logs ?? []) as AdminAuditLogRow[],
+        pagination: payload.pagination,
+      };
+    },
+  });
+}
+
+export function useAdminWebhookLogs(query: {
+  page?: number;
+  limit?: number;
+  processed?: "all" | "true" | "false";
+  reference?: string;
+} = {}) {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 25;
+  const processed = query.processed === "all" ? undefined : query.processed;
+  const reference = query.reference?.trim() || undefined;
+
+  return useQuery({
+    queryKey: ["admin", "webhook-logs", { page, limit, processed, reference }],
+    queryFn: async () => {
+      const res = await api.get("/admin/webhook-logs", {
+        params: {
+          page,
+          limit,
+          ...(processed ? { processed } : {}),
+          ...(reference ? { reference } : {}),
+        },
+      });
+      const payload = res.data.data ?? res.data;
+      return {
+        logs: (payload.logs ?? []) as AdminWebhookLogRow[],
+        pagination: payload.pagination,
+      };
+    },
+  });
+}
+
+export function useAdminWebhookLog(id: string | null) {
+  return useQuery({
+    queryKey: ["admin", "webhook-logs", id],
+    queryFn: async () => {
+      const res = await api.get(`/admin/webhook-logs/${id}`);
+      const payload = res.data.data ?? res.data;
+      return (payload.log ?? payload) as AdminWebhookLogDetail;
+    },
+    enabled: !!id,
   });
 }

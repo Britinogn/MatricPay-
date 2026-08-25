@@ -42,6 +42,8 @@ import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import AdminOverviewPage from "./pages/admin/AdminOverviewPage";
 import AdminOrganizersPage from "./pages/admin/AdminOrganizersPage";
 import AdminCampaignsPage from "./pages/admin/AdminCampaignsPage";
+import AdminAuditPage from "./pages/admin/AdminAuditPage";
+import AdminWebhooksPage from "./pages/admin/AdminWebhooksPage";
 
 
 //not found
@@ -98,6 +100,8 @@ function App() {
               <Route path="overview" element={<AdminOverviewPage />} />
               <Route path="organizers" element={<AdminOrganizersPage />} />
               <Route path="campaigns" element={<AdminCampaignsPage />} />
+              <Route path="audit" element={<AdminAuditPage />} />
+              <Route path="webhooks" element={<AdminWebhooksPage />} />
             </Route>
           </Route>
 

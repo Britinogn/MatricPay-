@@ -34,3 +34,18 @@ adminRoutes.get(
   "/dashboard",
   asyncHandler(adminController.getDashboard.bind(adminController))
 );
+
+adminRoutes.get(
+  "/audit-logs",
+  asyncHandler(adminController.listAuditLogs.bind(adminController))
+);
+
+adminRoutes.get(
+  "/webhook-logs",
+  asyncHandler(adminController.listWebhookLogs.bind(adminController))
+);
+
+adminRoutes.get(
+  "/webhook-logs/:id",
+  asyncHandler(adminController.getWebhookLog.bind(adminController))
+);
