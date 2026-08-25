@@ -30,6 +30,7 @@ import PaymentsPage from "./pages/organizer/PaymentsPage";
 import CampaignPaymentsPage from "./pages/organizer/CampaignPaymentsPage";
 import ReportsPage from "./pages/organizer/ReportsPage";
 import CampaignReportPage from "./pages/organizer/CampaignReportPage";
+import ActivityPage from "./pages/organizer/ActivityPage";
 
 // Public student flow
 import PublicPaymentPage from "./pages/public/PublicPaymentPage";
@@ -85,6 +86,7 @@ function App() {
               <Route path="payments/:campaignId" element={<CampaignPaymentsPage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="reports/:campaignId" element={<CampaignReportPage />} />
+              <Route path="activity" element={<ActivityPage />} />
               {/* <Route path="more" element={<MorePage />} /> */}
             </Route>
           </Route>

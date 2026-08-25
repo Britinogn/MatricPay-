@@ -11,6 +11,7 @@ import {
   InformationCircleIcon,
   Logout01Icon,
   ArrowRight01Icon,
+  Clock01Icon,
 } from "@hugeicons/core-free-icons";
 import { useCurrentUser, useLogout } from "../../../hooks";
 
@@ -22,6 +23,7 @@ interface MoreSheetProps {
 const accountItems = [
   { label: "Payouts", icon: CreditCardIcon, to: "/dashboard/payout-account", available: true },
   { label: "Reports", icon: ChartIcon, to: "/dashboard/reports", available: true },
+  { label: "Activity", icon: Clock01Icon, to: "/dashboard/activity", available: true },
   { label: "Settings", icon: Settings01Icon, to: null, available: false },
 ];
 

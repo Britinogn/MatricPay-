@@ -11,6 +11,7 @@ import {
   Mail01Icon,
   InformationCircleIcon,
   Logout01Icon,
+  Clock01Icon,
 } from "@hugeicons/core-free-icons";
 
 const mainItems = [
@@ -23,6 +24,7 @@ const mainItems = [
 const accountItems = [
   { label: "Payouts", to: "/dashboard/payout-account", icon: CreditCardIcon, available: true },
   { label: "Reports", to: "/dashboard/reports", icon: ChartIcon, available: true },
+  { label: "Activity", to: "/dashboard/activity", icon: Clock01Icon, available: true },
   { label: "Settings", to: null, icon: Settings01Icon, available: false },
 ];
 

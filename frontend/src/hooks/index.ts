@@ -5,3 +5,4 @@ export * from "./usePayments";
 export * from "./usePayoutAccount";
 export * from "./useDashboard";
 export * from "./useCampaignPayments";
+export * from "./useAuditLogs";

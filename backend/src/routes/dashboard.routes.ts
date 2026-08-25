@@ -22,3 +22,9 @@ dashboardRoutes.get(
   authMiddleware,
   asyncHandler(dashboardController.getCollectionTimeseries.bind(dashboardController))
 );
+
+dashboardRoutes.get(
+  "/audit-logs",
+  authMiddleware,
+  asyncHandler(dashboardController.listAuditLogs.bind(dashboardController))
+);
