@@ -1,150 +1,81 @@
-# 🎓 MatricPay (Phase 1 — Paystack Architecture)
+# MatricPay
 
-**MatricPay** is a university and polytechnic-focused payment collection platform built for class representatives, department executives, and student organizers to collect dues, levies, and event fees effortlessly.
+University and polytechnic payment collection for class reps, departmental executives, and student organizers.
 
-It completely eliminates manual bank transfers, WhatsApp screenshot verification, and spreadsheet reconciliation headaches by automatically matching verified student payments through secure **Paystack Checkout** integration.
-
----
-
-## 🌟 What MatricPay Solves
-
-| Traditional Manual Process ❌ | MatricPay Solution ✅ |
-| :--- | :--- |
-| Manual transfers to personal class rep bank accounts | Automated collection via Paystack Checkout (Card, USSD, Bank Transfer) |
-| WhatsApp screenshot spam & receipt verification | Instant automated verification & cryptographic payment references (`MP-...`) |
-| Excel spreadsheet errors & lost records | Live organizer collection dashboard updating automatically |
-| Fraud & matric number impersonation | Pre-validated student rosters & server-side rate limiting |
+Students pay through **Paystack Checkout**. MatricPay never holds the money. Each payment settles to the organizer’s bank via a **Paystack subaccount**. MatricPay takes a **2% platform fee** at charge time (`transaction_charge` in kobo). Paystack’s own fee is borne by the organizer (`bearer: subaccount`).
 
 ---
 
-## 🚀 Key Phase 1 Features
+## How it works
 
-### 1. 🎓 **Campaign Management**
-- **Restricted Campaigns**: Tailored for departmental dues or levies where the student list is known. Requires uploading a student roster before activation.
-- **Open Campaigns**: Tailored for hackathons, seminars, or public contributions. Students register their details directly during payment. Supports **Fixed** or **Minimum** contribution amounts.
-- **Computed Expiry**: Campaigns dynamically check expiry status (`status = active AND expires_at < NOW()`) at read-time, preventing database state drift.
+### Organizer
 
-### 2. 📁 **Student Roster Import**
-- Supports uploading student lists via **CSV (`.csv`)** and **Excel (`.xlsx`)** files before campaign activation.
-- Server-side deduplication by matriculation number with row error metrics (processed, successful, skipped rows).
+1. **Register / log in** (JWT, no refresh token in Phase 1).
+2. **Link a payout account** — bank resolve + Paystack subaccount. Campaigns cannot go live without this.
+3. **Create a campaign**
+   - **Restricted** — known roster (departmental dues). Upload students (CSV / Excel / manual) **before** activate.
+   - **Open** — events, hackathons. Student fills details at pay time. Amount can be **fixed** or **minimum**.
+4. **Activate** — restricted needs students + payout; open needs payout.
+5. **Share the payment link** `/pay/:slug`.
+6. Watch **overview**, **campaign dashboard**, **payments**, and **reports** (CSV / PDF of successful payers).
+7. **Close** when collection is done. Drafts can be deleted; payments keep history.
 
-### 3. 💳 **Paystack Payment Engine**
-- **Kobo Currency Boundary**: Converts NGN to Kobo (`amount × 100`) strictly at the Paystack API call.
-- **Dual Verification Engine**:
-  1. **Direct Synchronous Verification** (`GET /api/payments/:reference/status`): Instant verification when students land on the post-checkout page.
-  2. **Authoritative Webhook Verification** (`POST /api/webhook/paystack`): Signed HMAC SHA-512 verification, idempotency checks via `WebhookLog`, and retry tracking.
-- **Flagged Transaction Safeguard**: Any amount or currency mismatches are marked `status = flagged` with `failure_reason = amount_mismatch` for manual review.
+### Student (restricted)
 
-### 4. 📊 **Organizer & Admin Dashboards**
-- **Organizer Dashboard** (`/api/organizer/overview` & `/api/campaigns/:id/dashboard`): Live collection progress, expected vs. collected amounts, collection percentage, paid/unpaid student rosters, and flagged payments.
-- **Strict Isolation**: Organizer A can **never** view or manage Organizer B's campaigns (`404 Not Found` returned if attempted).
-- **Super Admin Management** (`/api/admin/*`): System-wide revenue metrics, organizer suspension/reactivation, campaign force-closure, and audit logging (`AuditLog` table). Guarded by `role = admin`.
+1. Open the link → enter **matric number** (must be on the roster).
+2. Enter an **email for this Paystack checkout only**. It is **not** written onto the student row.
+3. Pay. Success is confirmed by **redirect verify** and/or **Paystack webhook**.
+
+### Student (open)
+
+1. Open the link → enter name, matric, **email** (saved on the student), optional extras, amount if minimum.
+2. Pay the same way.
+
+### Money
+
+| Piece | Who gets it |
+|--------|-------------|
+| Student charge | Whole naira (ceiled) sent to Paystack in **kobo** |
+| Paystack fee | Organizer (subaccount) |
+| MatricPay 2% | Main Paystack account (`transaction_charge`) |
+| Remainder | Organizer bank on Paystack’s settlement cycle (usually T+1) |
+
+**Organizer dashboards use net (campaign amount × paid students).**  
+**Admin totals are gross (what students paid).**
+
+If paid amount / currency does not match, the payment is **flagged**, not silently marked successful.
 
 ---
 
-## 🛠️ Technology Stack
+## What Phase 1 includes
 
-### **Backend Core**
-- **Runtime**: Node.js & TypeScript (`tsx watch`)
-- **Framework**: Express.js
-- **Database & ORM**: PostgreSQL (Supabase) & Prisma ORM
-- **Payment Gateway**: Paystack API (Initialize, Verify, Webhooks)
-- **Authentication**: Short-lived JWT (`Bearer` tokens) & bcrypt password hashing
-- **Data Validation**: Zod schema validation
-- **File Processing**: Multer & `xlsx` / `csv-parse`
+- Restricted + open campaigns, activate / close / edit / delete
+- Student import, search, pagination, edit, delete, bulk delete
+- Public pay pages, PWA
+- Paystack initialize + verify + signed webhook (`WebhookLog`)
+- Organizer: overview, campaign metrics + chart, payments, reports, payout account, activity (audit)
+- Admin: overview, organizers (suspend / reactivate), campaigns (force-close), audit, webhook inspector
+- Desktop sidebar + mobile app-style tabs / More sheet
+
+**Not in Phase 1:** settings, reset password, refunds, Socket.IO, subscriptions, multi-org.
 
 ---
 
-## 📁 Project Structure
+## Stack
+
+| Layer | Choice |
+|--------|--------|
+| Frontend | React, Vite, Tailwind v4, TanStack Query, React Router |
+| Backend | Node, Express, TypeScript |
+| DB | PostgreSQL + Prisma |
+| Pay | Paystack (initialize, verify, webhook, subaccounts) |
+| Auth | JWT Bearer + bcrypt |
+
+---
+
+## Repo
 
 ```text
 matricpay/
-├── backend/
-│   ├── prisma/
-│   │   └── schema.prisma         # Postgres database schema
-│   ├── src/
-│   │   ├── config/               # Environment & app config
-│   │   ├── controllers/          # Request handlers (Auth, Campaign, Student, Payment, Dashboard, Admin)
-│   │   ├── lib/                  # Paystack client & Prisma instance
-│   │   ├── middleware/           # Auth, Role, CORS, Error & Validation middleware
-│   │   ├── repositories/         # Database queries & data access layer
-│   │   ├── routes/               # Express API endpoints
-│   │   ├── services/             # Core business logic engine
-│   │   ├── utils/                # Reference generator, JWT, Password, Matric normalizer
-│   │   └── validators/           # Zod input validation schemas
-│   ├── package.json
-│   ├── PHASE_1.md
-│   └── PHASE_2.md
-├── frontend/                     # Client web application workspace
-├── MatricPay-MVP-v5-Paystack.md  # Master Phase 1 Architecture Specification
-└── README.md                     # Project documentation
-```
-
----
-
-## 🔌 API Endpoint Sitemap (Phase 1)
-
-### 🔑 Authentication
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :---: |
-| `POST` | `/api/auth/register` | Register a new organizer account | ❌ No |
-| `POST` | `/api/auth/login` | Login organizer or admin, returns JWT & role | ❌ No |
-
-### 📢 Campaigns & Organizer Hub
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :---: |
-| `POST` | `/api/campaigns` | Create a new campaign (Restricted / Open) | 🔒 Yes (Organizer) |
-| `GET` | `/api/campaigns` | List organizer's campaigns | 🔒 Yes (Organizer) |
-| `GET` | `/api/campaigns/:id` | Get single campaign details | 🔒 Yes (Organizer) |
-| `PATCH` | `/api/campaigns/:id/status` | Change campaign status (`draft` ➔ `active` ➔ `closed`) | 🔒 Yes (Organizer) |
-| `GET` | `/api/organizer/overview` | Get organizer overview metrics across all campaigns | 🔒 Yes (Organizer) |
-| `GET` | `/api/campaigns/:id/dashboard` | Get single campaign live metrics & student payment status | 🔒 Yes (Organizer) |
-
-### 🎓 Students
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :---: |
-| `POST` | `/api/campaigns/:id/students` | Manual student roster import | 🔒 Yes (Organizer) |
-| `POST` | `/api/campaigns/:id/students/import/csv` | CSV / Excel `.xlsx` file roster upload | 🔒 Yes (Organizer) |
-| `POST` | `/api/campaigns/slug/:slug/students/validate` | Public student validation before checkout | ❌ No |
-
-### 💳 Payments & Webhook
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :---: |
-| `POST` | `/api/payments/initiate` | Initiate Paystack transaction & return checkout URL | ❌ No |
-| `GET` | `/api/payments/:reference/status` | Direct synchronous payment re-verification | ❌ No |
-| `POST` | `/api/webhook/paystack` | Paystack Webhook with HMAC SHA-512 signature check | 🛡️ Webhook Secret |
-
-### 🛡️ Admin Management
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :---: |
-| `GET` | `/api/admin/dashboard` | Platform revenue & collection overview | 👑 Admin Only |
-| `GET` | `/api/admin/organizers` | List all registered organizers & total funds collected | 👑 Admin Only |
-| `PATCH` | `/api/admin/organizers/:id/status` | Suspend or reactivate organizer account | 👑 Admin Only |
-| `GET` | `/api/admin/campaigns` | Platform-wide campaigns list | 👑 Admin Only |
-| `PATCH` | `/api/admin/campaigns/:id/status` | Force-close an organizer's campaign | 👑 Admin Only |
-
----
-
-## 💻 Local Development Setup
-
-### 1. Prerequisites
-- Node.js (v18+)
-- PostgreSQL Database (e.g. Supabase DB)
-- Paystack Account (Test Mode API Keys)
-
-### 3. Install & Start Backend
-```bash
-cd backend
-npm install
-
-# Run database migrations
-npx prisma db push
-
-# Seed Admin User
-npx tsx src/seed_admin.ts
-
-# Start Development Server
-npm run dev
-```
-
-The API will be live at `http://localhost:5000`! 🚀
+├── backend/          API, Prisma, Paystack
+└── frontend/         Organizer, admin, public pay, marketing
