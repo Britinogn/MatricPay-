@@ -15,4 +15,7 @@ exports.adminRoutes.patch("/organizers/:id/status", (0, async_handler_1.asyncHan
 exports.adminRoutes.get("/campaigns", (0, async_handler_1.asyncHandler)(admin_controller_1.adminController.listCampaigns.bind(admin_controller_1.adminController)));
 exports.adminRoutes.patch("/campaigns/:id/status", (0, async_handler_1.asyncHandler)(admin_controller_1.adminController.updateCampaignStatus.bind(admin_controller_1.adminController)));
 exports.adminRoutes.get("/dashboard", (0, async_handler_1.asyncHandler)(admin_controller_1.adminController.getDashboard.bind(admin_controller_1.adminController)));
+exports.adminRoutes.get("/audit-logs", (0, async_handler_1.asyncHandler)(admin_controller_1.adminController.listAuditLogs.bind(admin_controller_1.adminController)));
+exports.adminRoutes.get("/webhook-logs", (0, async_handler_1.asyncHandler)(admin_controller_1.adminController.listWebhookLogs.bind(admin_controller_1.adminController)));
+exports.adminRoutes.get("/webhook-logs/:id", (0, async_handler_1.asyncHandler)(admin_controller_1.adminController.getWebhookLog.bind(admin_controller_1.adminController)));
 //# sourceMappingURL=admin.routes.js.map

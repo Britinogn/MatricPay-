@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.campaignController = exports.CampaignController = void 0;
 const http_error_1 = require("../utils/http-error");
 const campaign_service_1 = require("../services/campaign.service");
+const campaign_export_service_1 = require("../services/campaign-export.service");
 const campaign_validator_1 = require("../validators/campaign.validator");
 function requireAuthenticatedUser(request) {
     if (!request.user) {
@@ -66,6 +67,29 @@ class CampaignController {
         const { campaignIds } = campaign_validator_1.BulkDeleteCampaignsSchema.parse(request.body);
         const result = await campaign_service_1.campaignService.bulkDeleteCampaigns(user, campaignIds);
         response.status(200).json(result);
+    }
+    async listPayments(request, response) {
+        const user = requireAuthenticatedUser(request);
+        const { id } = campaign_validator_1.CampaignIdParamSchema.parse(request.params);
+        const query = campaign_validator_1.CampaignPaymentsQuerySchema.parse(request.query);
+        const result = await campaign_service_1.campaignService.listCampaignPayments(user, id, query);
+        response.status(200).json(result);
+    }
+    async exportPaymentsCsv(request, response) {
+        const user = requireAuthenticatedUser(request);
+        const { id } = campaign_validator_1.CampaignIdParamSchema.parse(request.params);
+        const result = await campaign_export_service_1.campaignExportService.exportCsv(user, id);
+        response.setHeader("Content-Type", result.contentType);
+        response.setHeader("Content-Disposition", `attachment; filename="${result.filename}"`);
+        response.status(200).send(result.body);
+    }
+    async exportPaymentsPdf(request, response) {
+        const user = requireAuthenticatedUser(request);
+        const { id } = campaign_validator_1.CampaignIdParamSchema.parse(request.params);
+        const result = await campaign_export_service_1.campaignExportService.exportPdf(user, id);
+        response.setHeader("Content-Type", result.contentType);
+        response.setHeader("Content-Disposition", `attachment; filename="${result.filename}"`);
+        response.status(200).send(result.buffer);
     }
 }
 exports.CampaignController = CampaignController;

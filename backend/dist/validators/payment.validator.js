@@ -11,5 +11,6 @@ exports.initiatePaymentSchema = zod_1.z.object({
     department: zod_1.z.string().optional(),
     level: zod_1.z.string().optional(),
     amount: zod_1.z.coerce.number().positive("Amount must be greater than 0").optional(),
+    idempotencyKey: zod_1.z.string().uuid("A valid payment attempt key is required"),
 });
 //# sourceMappingURL=payment.validator.js.map

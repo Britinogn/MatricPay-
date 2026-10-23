@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BulkDeleteCampaignsSchema = exports.CampaignListQuerySchema = exports.UpdateCampaignStatusSchema = exports.CampaignSlugParamSchema = exports.CampaignIdParamSchema = exports.UpdateCampaignSchema = exports.CreateCampaignSchema = void 0;
+exports.CampaignPaymentsQuerySchema = exports.BulkDeleteCampaignsSchema = exports.CampaignListQuerySchema = exports.UpdateCampaignStatusSchema = exports.CampaignSlugParamSchema = exports.CampaignIdParamSchema = exports.UpdateCampaignSchema = exports.CreateCampaignSchema = void 0;
 const zod_1 = require("zod");
 const uuidSchema = zod_1.z.uuid({ message: "Invalid ID format" });
 const currencySchema = zod_1.z
@@ -27,7 +27,11 @@ exports.CreateCampaignSchema = zod_1.z.object({
         .min(3, { message: "Title must be at least 3 characters" })
         .max(120, { message: "Title must not exceed 120 characters" }),
     description: optionalTextSchema,
-    amount: zod_1.z.coerce
+    // amount: z.coerce
+    //   .number()
+    //   .positive({ message: "Amount must be greater than zero" })
+    //   .max(100_000_000, { message: "Amount is too large" }),
+    netAmount: zod_1.z.coerce
         .number()
         .positive({ message: "Amount must be greater than zero" })
         .max(100_000_000, { message: "Amount is too large" }),
@@ -46,10 +50,15 @@ exports.UpdateCampaignSchema = zod_1.z
         .max(120, { message: "Title must not exceed 120 characters" })
         .optional(),
     description: optionalTextSchema,
-    amount: zod_1.z.coerce
+    // amount: z.coerce
+    //   .number()
+    //   .positive({ message: "Amount must be greater than zero" })
+    //   .max(100_000_000, { message: "Amount is too large" })
+    //   .optional(),
+    netAmount: zod_1.z.coerce
         .number()
-        .positive({ message: "Amount must be greater than zero" })
-        .max(100_000_000, { message: "Amount is too large" })
+        .positive()
+        .max(100_000_000)
         .optional(),
     amountType: zod_1.z.enum(["fixed", "minimum"]).optional(),
     currency: currencySchema.optional(),
@@ -83,5 +92,20 @@ exports.BulkDeleteCampaignsSchema = zod_1.z.object({
     campaignIds: zod_1.z
         .array(uuidSchema)
         .min(1, { message: "At least one campaign ID is required" }),
+});
+exports.CampaignPaymentsQuerySchema = zod_1.z.object({
+    status: zod_1.z
+        .enum([
+        "successful",
+        "pending",
+        "flagged",
+        "superseded",
+        "failed",
+        "expired",
+    ])
+        .optional(),
+    search: zod_1.z.string().trim().min(1).max(120).optional(),
+    page: zod_1.z.coerce.number().int().positive().default(1),
+    limit: zod_1.z.coerce.number().int().positive().max(100).default(25),
 });
 //# sourceMappingURL=campaign.validator.js.map

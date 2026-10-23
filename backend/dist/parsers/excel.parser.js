@@ -34,7 +34,8 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseStudentsExcel = parseStudentsExcel;
-const XLSX = __importStar(require("xlsx"));
+// import * as XLSX from "xlsx";
+const XLSX = __importStar(require("@stackline/xlsx"));
 const env_1 = require("../config/env");
 const http_error_1 = require("../utils/http-error");
 const matric_number_1 = require("../utils/matric-number");

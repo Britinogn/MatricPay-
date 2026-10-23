@@ -19,6 +19,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@stackline/xlsx": "^1.0.9",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -32,12 +33,11 @@
     "multer": "^2.2.0",
     "mysql2": "^3.22.5",
     "nanoid": "^3.3.13",
-    "nodemailer": "^9.0.3",
+    "nodemailer": "^10.2.1",
     "npm": "^11.17.0",
     "pdfkit": "^0.20.1",
     "pg": "^8.22.0",
     "prisma": "^7.8.0",
-    "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {

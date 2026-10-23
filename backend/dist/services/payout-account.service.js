@@ -6,16 +6,46 @@ const payment_repository_1 = require("../repositories/payment.repository");
 const user_repository_1 = require("../repositories/user.repository");
 const http_error_1 = require("../utils/http-error");
 class PayoutAccountService {
+    // async getPayoutAccount(userId: string) {
+    //     const user = await userRepository.findById(userId);
+    //     if (!user) {
+    //         throw new HttpError(404, "User not found");
+    //     }
+    //     return {
+    //         paystackSubaccountCode: user.paystackSubaccountCode ?? null,
+    //         settlementBankCode: user.settlementBankCode ?? null,
+    //         settlementAccountNumber: user.settlementAccountNumber ?? null,
+    //         settlementAccountName: user.settlementAccountName ?? null,
+    //     };
+    // }
     async getPayoutAccount(userId) {
         const user = await user_repository_1.userRepository.findById(userId);
         if (!user) {
             throw new http_error_1.HttpError(404, "User not found");
+        }
+        let isVerified = false;
+        let verificationError = null;
+        if (user.paystackSubaccountCode) {
+            try {
+                const subaccount = await paystack_client_1.paystackClient.getSubaccount(user.paystackSubaccountCode);
+                isVerified = subaccount.active;
+            }
+            catch (error) {
+                isVerified = false;
+                verificationError = error instanceof Error ? error.message : "Unable to verify subaccount status";
+                console.error(`Failed to check subaccount status for ${user.id}:`, error);
+            }
+        }
+        else {
+            isVerified = false;
         }
         return {
             paystackSubaccountCode: user.paystackSubaccountCode ?? null,
             settlementBankCode: user.settlementBankCode ?? null,
             settlementAccountNumber: user.settlementAccountNumber ?? null,
             settlementAccountName: user.settlementAccountName ?? null,
+            isVerified,
+            verificationError,
         };
     }
     async resolveAccountNumber(userId, data) {

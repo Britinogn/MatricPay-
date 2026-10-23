@@ -126,6 +126,24 @@ class PaystackClient {
             return false;
         }
     }
+    async getSubaccount(code) {
+        try {
+            const response = await fetch(`${this.baseUrl}/subaccount/${encodeURIComponent(code)}`, {
+                method: "GET",
+                headers: this.headers,
+            });
+            const body = await response.json();
+            if (!response.ok || !body.status) {
+                throw new http_error_1.HttpError(response.status >= 400 && response.status < 500 ? response.status : 502, body.message || "Failed to fetch subaccount");
+            }
+            return body.data;
+        }
+        catch (error) {
+            if (error instanceof http_error_1.HttpError)
+                throw error;
+            throw new http_error_1.HttpError(502, `Paystack subaccount fetch error: ${error.message}`);
+        }
+    }
 }
 exports.PaystackClient = PaystackClient;
 exports.paystackClient = new PaystackClient();

@@ -4,6 +4,7 @@ exports.adminController = exports.AdminController = void 0;
 const client_1 = require("@prisma/client");
 const admin_service_1 = require("../services/admin.service");
 const http_error_1 = require("../utils/http-error");
+const audit_service_1 = require("../services/audit.service");
 class AdminController {
     async listOrganizers(request, response) {
         const queryOptions = {};
@@ -87,6 +88,48 @@ class AdminController {
             success: true,
             data,
         });
+    }
+    async listAuditLogs(request, response) {
+        const query = {};
+        if (request.query.page)
+            query.page = Number(request.query.page);
+        if (request.query.limit)
+            query.limit = Number(request.query.limit);
+        if (typeof request.query.event === "string" && request.query.event.trim()) {
+            query.event = request.query.event.trim();
+        }
+        if (typeof request.query.search === "string" && request.query.search.trim()) {
+            query.search = request.query.search.trim();
+        }
+        const data = await audit_service_1.auditService.listForAdmin(query);
+        response.status(200).json({ success: true, data });
+    }
+    async listWebhookLogs(request, response) {
+        const query = {};
+        if (request.query.page)
+            query.page = Number(request.query.page);
+        if (request.query.limit)
+            query.limit = Number(request.query.limit);
+        if (request.query.processed === "true")
+            query.processed = true;
+        if (request.query.processed === "false")
+            query.processed = false;
+        if (typeof request.query.reference === "string" &&
+            request.query.reference.trim()) {
+            query.reference = request.query.reference.trim();
+        }
+        const data = await audit_service_1.auditService.listWebhooks(query);
+        response.status(200).json({ success: true, data });
+    }
+    async getWebhookLog(request, response) {
+        const id = Array.isArray(request.params.id)
+            ? request.params.id[0]
+            : request.params.id;
+        if (!id) {
+            throw new http_error_1.HttpError(400, "Webhook log ID is required");
+        }
+        const data = await audit_service_1.auditService.getWebhookById(id);
+        response.status(200).json({ success: true, data });
     }
 }
 exports.AdminController = AdminController;

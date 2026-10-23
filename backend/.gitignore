@@ -1,4 +1,6 @@
 node_modules
+dist
+dist/
 # Keep environment variables out of version control
 .env
 src/seed_admin.ts

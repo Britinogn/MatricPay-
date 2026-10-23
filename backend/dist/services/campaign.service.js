@@ -5,8 +5,10 @@ const client_1 = require("@prisma/client");
 const env_1 = require("../config/env");
 const campaign_repository_1 = require("../repositories/campaign.repository");
 const user_repository_1 = require("../repositories/user.repository");
+const payment_repository_1 = require("../repositories/payment.repository");
 const http_error_1 = require("../utils/http-error");
 const slug_1 = require("../utils/slug");
+const pricing_1 = require("../utils/pricing");
 const MAX_SLUG_ATTEMPTS = 5;
 function toCampaignResponse(campaign) {
     const isExpired = campaign.status === client_1.CampaignStatus.active &&
@@ -47,12 +49,16 @@ class CampaignService {
         const slug = await this.generateUniqueSlug(data.title);
         const paymentLink = `${env_1.env.CLIENT_URL}/pay/${slug}`;
         const expiresAt = toDateOrNull(data.expiresAt);
+        const netAmount = data.netAmount;
+        const grossAmount = (0, pricing_1.calculateGrossFromNet)(netAmount);
         const createData = {
             organizerId: user.id,
             organizationId: data.organizationId ?? null,
             title: data.title,
             description: data.description ?? null,
-            amount: data.amount,
+            // amount: data.amount,
+            amount: grossAmount, // student-facing gross
+            netAmount, // organizer's target
             amountType: data.amountType,
             currency: data.currency,
             slug,
@@ -102,8 +108,13 @@ class CampaignService {
         if (data.description !== undefined) {
             updateData.description = data.description;
         }
-        if (data.amount !== undefined) {
-            updateData.amount = data.amount;
+        // if (data.amount !== undefined) {
+        //   updateData.amount = data.amount;
+        // }
+        if (data.netAmount !== undefined) {
+            const grossAmount = (0, pricing_1.calculateGrossFromNet)(data.netAmount);
+            updateData.amount = grossAmount;
+            updateData.netAmount = data.netAmount;
         }
         if (data.amountType !== undefined) {
             updateData.amountType = data.amountType;
@@ -231,6 +242,16 @@ class CampaignService {
             success: true,
             deletedCount: campaigns.length,
         };
+    }
+    async listCampaignPayments(user, campaignId, query) {
+        const campaign = await this.getOwnedCampaign(user, campaignId);
+        return payment_repository_1.paymentRepository.listByCampaign({
+            campaignId: campaign.id,
+            ...(query.status ? { status: query.status } : {}),
+            ...(query.search ? { search: query.search } : {}),
+            page: query.page,
+            limit: query.limit,
+        });
     }
 }
 exports.CampaignService = CampaignService;

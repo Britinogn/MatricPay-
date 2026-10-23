@@ -1,4 +1,5 @@
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
+import * as XLSX from "@stackline/xlsx";
 import { env } from "../config/env";
 import { HttpError } from "../utils/http-error";
 import { isBlankStudentRow } from "../utils/matric-number";
